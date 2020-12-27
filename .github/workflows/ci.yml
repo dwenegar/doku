@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    paths-ignore:
+    - '*.md'
+    - '*.txt'
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Should Publish
+      if: github.event_name == 'push'
+      run: |
+          if ( "${{github.ref}}" -match "^refs/tags/[0-9]+\.[0-9]+\.[0-9]+" ) {
+              echo "DOKU_PUBLISH=true" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          } else {
+              echo "publish is only enabled by tagging with a release tag"
+          }
+
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Install .NET 5.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x'
+
+    - name: Update Templates
+      run: .\src\update-templates.ps1
+
+    - name: Build Doku
+      run: dotnet build src\Doku -c Release
+
+    - name: Build Doku.Releaser
+      run: dotnet build src\Doku.Releaser -c Release
+
+    - name: Build Packages
+      if: ${{ !env.DOKU_PUBLISH }}
+      run: .\src\Doku.Releaser\bin\Release\net5.0\Doku.Releaser.exe --build-only
+
+    - name: Build Packages and Publish
+      if: env.DOKU_PUBLISH
+      run: .\src\Doku.Releaser\bin\Release\net5.0\Doku.Releaser.exe --token ${{secrets.RELEASER_REPO_TOKEN}} --repository $env:GITHUB_REPOSITORY

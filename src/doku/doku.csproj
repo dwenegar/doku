@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <RootNamespace>Dwenegar.Doku</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\*.zip" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Authors>Livieri Simone</Authors>
+    <Copyright>Copyright (c) 2021 Simone Livieri. All rights reserved.</Copyright>
+    <Version Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</Version>
+    <Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>doku</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <PackageId>doku</PackageId>
+    <PackageTags>unity;documentation;tool</PackageTags>
+    <PackageReleaseNotes>https://github.com/dwenegar/doku/blob/CHANGELOG.md</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/dwenegar/doku</PackageProjectUrl>
+    <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Packaging.Targets" Version="0.1.189">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile;build</IncludeAssets>
+      <ExcludeAssets>runtime;contentFiles;native</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

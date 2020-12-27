@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Dwenegar.Doku.Releaser</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="Octokit" Version="0.48.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\doku\Logging\ConsoleUtils.cs">
+      <Link>Logging\ConsoleUtils.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Logging\Handlers\ConsoleLogHandler.cs">
+      <Link>Logging\Handlers\ConsoleLogHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Logging\Handlers\FileLogHandler.cs">
+      <Link>Logging\Handlers\FileLogHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Logging\Handlers\LogAggregatorHandler.cs">
+      <Link>Logging\Handlers\LogAggregatorHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Logging\Handlers\LogHandlerBase.cs">
+      <Link>Logging\Handlers\LogHandlerBase.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Logging\ILogHandler.cs">
+      <Link>Logging\ILogHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Logging\Logger.cs">
+      <Link>Logging\Logger.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Logging\LogLevel.cs">
+      <Link>Logging\LogLevel.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Logging\LogRecord.cs">
+      <Link>Logging\LogRecord.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Utils\Command.cs">
+      <Link>Utils\Command.cs</Link>
+    </Compile>
+    <Compile Include="..\doku\Utils\Files.cs">
+      <Link>Utils\Files.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Copyright>Copyright (C) 2021 Simone Livieri. All rights reserved.</Copyright>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+</Project>
