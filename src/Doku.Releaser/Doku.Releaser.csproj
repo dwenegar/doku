@@ -15,39 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\doku\Logging\ConsoleUtils.cs">
-      <Link>Logging\ConsoleUtils.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Logging\Handlers\ConsoleLogHandler.cs">
-      <Link>Logging\Handlers\ConsoleLogHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Logging\Handlers\FileLogHandler.cs">
-      <Link>Logging\Handlers\FileLogHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Logging\Handlers\LogAggregatorHandler.cs">
-      <Link>Logging\Handlers\LogAggregatorHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Logging\Handlers\LogHandlerBase.cs">
-      <Link>Logging\Handlers\LogHandlerBase.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Logging\ILogHandler.cs">
-      <Link>Logging\ILogHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Logging\Logger.cs">
-      <Link>Logging\Logger.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Logging\LogLevel.cs">
-      <Link>Logging\LogLevel.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Logging\LogRecord.cs">
-      <Link>Logging\LogRecord.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Utils\Command.cs">
-      <Link>Utils\Command.cs</Link>
-    </Compile>
-    <Compile Include="..\doku\Utils\Files.cs">
-      <Link>Utils\Files.cs</Link>
-    </Compile>
+    <ProjectReference Include="..\Doku.Lib\Doku.Lib.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

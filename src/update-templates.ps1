@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 Push-Location $PSScriptRoot
 
 $TemplateRoot = "$PSScriptRoot/Doku.Templates/project"
-$DestinationDir = "$PSScriptRoot/Doku/Templates"
+$DestinationDir = "$PSScriptRoot/Doku.Lib/Templates"
 
 if (!(Test-Path -Path $DestinationDir))
 {
