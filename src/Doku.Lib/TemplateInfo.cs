@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Dwenegar.Doku.Templates
+namespace Dwenegar.Doku
 {
     internal enum TemplateType
     {

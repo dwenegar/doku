@@ -12,7 +12,6 @@ using System.Text;
 using System.Text.Json;
 using Dwenegar.Doku.Logging;
 using Dwenegar.Doku.Resources;
-using Dwenegar.Doku.Templates;
 using Dwenegar.Doku.Utils;
 
 namespace Dwenegar.Doku

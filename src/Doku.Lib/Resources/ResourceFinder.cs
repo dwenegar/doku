@@ -1,4 +1,4 @@
-﻿// Copyright 2021 Simone Livieri. All rights reserved.
+// Copyright 2021 Simone Livieri. All rights reserved.
 // This file is licensed under the BSD-Clause 2 license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Dwenegar.Doku.Logging;
 
 namespace Dwenegar.Doku.Resources
 {
@@ -14,12 +15,12 @@ namespace Dwenegar.Doku.Resources
     {
         private readonly Assembly _assembly;
         private readonly string _resourcePrefix;
-        private readonly IEnumerable<string> _manifestResourceNames;
+        private readonly string[] _manifestResourceNames;
 
         public ResourceFinder(Assembly assembly, string rootNamespace)
         {
             _assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
-            _resourcePrefix = $"{assembly.GetName().Name}.{rootNamespace}.";
+            _resourcePrefix = $"Dwenegar.Doku.{rootNamespace}.";
             _manifestResourceNames = assembly.GetManifestResourceNames();
         }
 
