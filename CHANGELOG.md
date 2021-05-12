@@ -1,9 +1,16 @@
+# CHANGELOG
+
+
+## 0.2.0
+
+### Code Refactoring
+
+* Split projects
+
 
 ## 0.1.0
 
 ### Features
 
-- Initial implementation
+* Initial implementation
 
-
-[Unreleased]: https://github.com/dwenegar/doku/compare/0.1.0...HEAD
