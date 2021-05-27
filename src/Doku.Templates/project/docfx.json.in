@@ -49,6 +49,8 @@
         "files": [
           "images/**",
           "manual/images/**",
+          "files/**",
+          "manual/files/**",
           "logo.svg"
         ],
         "exclude": [
