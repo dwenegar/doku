@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 0.3.0
+
+### Features
+
+* support arbitrary files in docs
+
+
 ## 0.2.1
 
 ### Bug Fixes
