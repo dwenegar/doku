@@ -51,6 +51,7 @@ namespace Dwenegar.Doku.Releaser
                 PackPlatform(dotnetPath, "win-x64", version, ReleaseAssetKind.Zip),
                 PackPlatform(dotnetPath, "linux-x64", version, ReleaseAssetKind.Deb),
                 PackPlatform(dotnetPath, "linux-x64", version, ReleaseAssetKind.Rpm),
+                PackPlatform(dotnetPath, "linux-x64", version, ReleaseAssetKind.TarBall),
                 PackPlatform(dotnetPath, "osx-x64", version, ReleaseAssetKind.TarBall)
             };
             CopyFilesToOutputFolder(entries);
