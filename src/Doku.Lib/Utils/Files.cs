@@ -44,6 +44,11 @@ namespace Dwenegar.Doku.Utils
             MoveFile(Path.Combine(srcDir, filename), Path.Combine(dstDir, filename));
         }
 
+        public static void TryCopyFile(string filename, string srcDir, string dstDir)
+        {
+            TryCopyFile(Path.Combine(srcDir, filename), Path.Combine(dstDir, filename));
+        }
+
         public static bool TryCopyFile(string src, string dst)
         {
             if (File.Exists(src))

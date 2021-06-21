@@ -440,7 +440,7 @@ namespace Dwenegar.Doku
             Logger.LogVerbose("Copying logo file.");
             using Logger.Scope scope = new("CopyLogo");
 
-            Files.MoveFile("logo.svg", _packageManualPath, _buildPath);
+            Files.TryCopyFile("logo.svg", _packageManualPath, _buildPath);
         }
 
         private void CopyFavicon()
@@ -453,7 +453,7 @@ namespace Dwenegar.Doku
             Logger.LogVerbose("Copying favicon file.");
             using Logger.Scope scope = new("CopyFavicon");
 
-            Files.MoveFile("favicon.ico", _packageManualPath, _buildPath);
+            Files.TryCopyFile("favicon.ico", _packageManualPath, _buildPath);
         }
 
         private void CopyChangelog()
