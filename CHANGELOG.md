@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 0.3.3
+
+### Bug Fixes
+
+* do not move logo and favicon files
+
+
 ## 0.3.2
 
 ### Bug Fixes
