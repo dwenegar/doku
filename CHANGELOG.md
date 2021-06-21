@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 0.3.2
+
+### Bug Fixes
+
+* fix file list becoming invalid if there is a home.md file.
+
+
 ## 0.3.1
 
 ### Features
