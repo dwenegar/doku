@@ -312,11 +312,8 @@ namespace Dwenegar.Doku
             using Logger.Scope scope = new("CopyManualFiles");
 
             Files.CopyDirectory(_packageManualPath, _buildManualPath);
-            var files = Directory.GetFiles(_buildManualPath, "*.md", SearchOption.AllDirectories)
-                                 .ToList();
 
-            _hasManual = files.Count > 0;
-
+            _hasManual = Directory.EnumerateFiles(_buildManualPath, "*.md", SearchOption.AllDirectories).Any();
             if (!_hasManual)
             {
                 return;
@@ -330,8 +327,8 @@ namespace Dwenegar.Doku
             Files.MoveFile("filter.yml", _buildManualPath, _buildPath);
             Files.MoveFile("projectMetadata.yml", _buildManualPath, _buildPath);
 
-            Debug.Assert(files.Count > 0, "files.Length > 0");
-
+            var files = Directory.GetFiles(_buildManualPath, "*.md", SearchOption.AllDirectories)
+                                 .ToList();
             files.Sort();
 
             // move `index.md` to the top
