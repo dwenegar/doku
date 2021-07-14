@@ -353,7 +353,7 @@ namespace Dwenegar.Doku
             Logger.LogVerbose("Generating manual's table of contents.");
             using Logger.Scope scope = new("GenerateManualTableOfContents");
 
-            TocEntry root = new(null);
+            TocEntry root = new(null, null);
 
             foreach (string file in manualFiles)
             {
@@ -364,6 +364,8 @@ namespace Dwenegar.Doku
 
             static void AppendTocSection(StringBuilder sb, TocEntry entry, int indent)
             {
+                Logger.LogVerbose($"AppendTocSection entry={entry} indent={indent}");
+
                 sb.Append(' ', indent).Append("- name: ").AppendLine(entry.Title);
                 if (entry.Href != null)
                 {
