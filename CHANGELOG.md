@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 0.3.4
+
+### Bug Fixes
+
+* generate correct manual's ToC
+
+
 ## 0.3.3
 
 ### Bug Fixes

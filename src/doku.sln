@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
 		..\CHANGELOG.md = ..\CHANGELOG.md
+		Version.props = Version.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Doku.Releaser", "Doku.Releaser\Doku.Releaser.csproj", "{77E0BA4E-A8E6-4F43-94DA-55B9F6FCA67B}"
