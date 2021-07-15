@@ -40,7 +40,11 @@ namespace Dwenegar.Doku.Utils
                 parent._entries.Add(entry = new TocEntry(parent, title));
             }
 
-            entry.Href = href?.Replace('\\', '/');
+            if (href != null && href.EndsWith(".md"))
+            {
+                entry.Href = href.Replace('\\', '/');
+            }
+
             return entry;
         }
 
