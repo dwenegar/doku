@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 0.3.5
+
+### Bug Fixes
+
+* output hrefs only for documents
+
+
 ## 0.3.4
 
 ### Bug Fixes
