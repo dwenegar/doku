@@ -15,7 +15,7 @@
   <PropertyGroup>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Livieri Simone</Authors>
-    <Copyright>Copyright (c) 2021 Simone Livieri. All rights reserved.</Copyright>
+    <Copyright>Copyright (c) 2021-2022 Simone Livieri. All rights reserved.</Copyright>
     <Version Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</Version>
     <Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
     <PackAsTool>true</PackAsTool>
