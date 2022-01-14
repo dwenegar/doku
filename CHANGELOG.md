@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## 0.4.0
+
+### Code Refactoring
+
+* reorganize code
+
+### Features
+
+* add support for custom stylesheet
+
+
 ## 0.3.5
 
 ### Bug Fixes
