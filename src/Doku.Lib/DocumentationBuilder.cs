@@ -117,16 +117,6 @@ namespace Dwenegar.Doku
             }
         }
 
-        private static T? Deserialize<T>(string json)
-        {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-
-            return JsonSerializer.Deserialize<T>(json, options);
-        }
-
         private void LoadPackageJson()
         {
             Logger.LogVerbose("Loading package.json.");
@@ -142,7 +132,7 @@ namespace Dwenegar.Doku
             {
                 packageJsonPath = Path.GetFullPath(packageJsonPath);
                 string packageJsonText = File.ReadAllText(packageJsonPath);
-                _packageInfo = Deserialize<PackageInfo>(packageJsonText);
+                _packageInfo = JsonSerializer.Deserialize(packageJsonText, SerializerContext.Default.PackageInfo);
                 if (_packageInfo == null)
                 {
                     throw new Exception("Invalid package.json.");
@@ -215,7 +205,7 @@ namespace Dwenegar.Doku
             if (File.Exists(path))
             {
                 string json = File.ReadAllText(path);
-                ProjectConfig? projectConfig = Deserialize<ProjectConfig>(json);
+                ProjectConfig? projectConfig = JsonSerializer.Deserialize(json, SerializerContext.Default.ProjectConfig);
                 if (projectConfig != null)
                 {
                     _projectConfig = projectConfig;
@@ -241,7 +231,7 @@ namespace Dwenegar.Doku
             }
 
             string json = File.ReadAllText(path, Encoding.UTF8);
-            _templateInfo = Deserialize<TemplateInfo>(json);
+            _templateInfo = JsonSerializer.Deserialize(json, SerializerContext.Default.TemplateInfo);
             if (_templateInfo == null)
             {
                 throw new Exception($"Failed to load {path}.");
@@ -660,14 +650,14 @@ namespace Dwenegar.Doku
         }
 
         [Serializable]
-        private sealed class PackageInfo
+        internal sealed class PackageInfo
         {
             public string DisplayName { get; set; } = string.Empty;
             public string Version { get; set; } = string.Empty;
         }
 
         [Serializable]
-        private sealed class ProjectConfig
+        internal sealed class ProjectConfig
         {
             public bool DisableDefaultFilter { get; set; }
             public bool EnableSearch { get; set; }
@@ -692,7 +682,7 @@ namespace Dwenegar.Doku
         }
 
         [Serializable]
-        private sealed class ProjectConfigExcludes
+        internal sealed class ProjectConfigExcludes
         {
             public bool ApiDocs { get; set; } = false;
             public bool Manual { get; set; } = false;

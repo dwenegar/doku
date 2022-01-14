@@ -24,10 +24,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
 
-    - name: Install .NET 5.0
+    - name: Install .NET 6.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.x'
+        dotnet-version: '6.0.x'
 
     - name: Update Templates
       run: .\src\update-templates.ps1
@@ -40,8 +40,8 @@ jobs:
 
     - name: Build Packages
       if: ${{ !env.DOKU_PUBLISH }}
-      run: .\src\Doku.Releaser\bin\Release\net5.0\Doku.Releaser.exe --build-only
+      run: .\src\Doku.Releaser\bin\Release\net6.0\Doku.Releaser.exe --build-only
 
     - name: Build Packages and Publish
       if: env.DOKU_PUBLISH
-      run: .\src\Doku.Releaser\bin\Release\net5.0\Doku.Releaser.exe --token ${{secrets.RELEASER_REPO_TOKEN}} --repository $env:GITHUB_REPOSITORY
+      run: .\src\Doku.Releaser\bin\Release\net6.0\Doku.Releaser.exe --token ${{secrets.RELEASER_REPO_TOKEN}} --repository $env:GITHUB_REPOSITORY

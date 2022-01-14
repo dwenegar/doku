@@ -31,7 +31,7 @@ namespace Dwenegar.Doku.Releaser
 
             _srcPath = Path.Combine(rootPath, "src");
             _dokuPath = Path.Combine(_srcPath, "doku");
-            _dokuReleasePath = Path.Combine(_dokuPath, "bin", "Release", "net5.0");
+            _dokuReleasePath = Path.Combine(_dokuPath, "bin", "Release", "net6.0");
         }
 
         public BuildResult Build()
@@ -184,11 +184,11 @@ namespace Dwenegar.Doku.Releaser
 
             StringBuilder arguments = new("publish");
             arguments.Append($" -c Release -r {platform}")
+                     .Append($" --self-contained")
                      .Append($" -t:{target}")
                      .Append(" -p:PublishTrimmed=true")
                      .Append(" -p:TrimMode=Link")
                      .Append(" -p:PublishSingleFile=true")
-                     .Append(" -p:SelfContained=true")
                      .Append(" -p:CopyOutputSymbolsToPublishDirectory=false")
                      .Append(" -p:SkipCopyingSymbolsToOutputDirectory=true");
 
