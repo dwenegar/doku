@@ -33,27 +33,32 @@ namespace Dwenegar.Doku.Logging
             s_instance.CloseHandlers();
         }
 
-        public static void LogVerbose(string message) => s_instance.Log(LogLevel.Verbose, message);
+        public static void LogVerbose(string message) => s_instance.DoLog(LogLevel.Verbose, message);
 
-        public static void LogInfo(string message) => s_instance.Log(LogLevel.Info, message);
+        public static void LogInfo(string message) => s_instance.DoLog(LogLevel.Info, message);
 
-        public static void LogWarning(string message) => s_instance.Log(LogLevel.Warning, message);
+        public static void LogWarning(string message) => s_instance.DoLog(LogLevel.Warning, message);
 
-        public static void LogError(string message) => s_instance.Log(LogLevel.Error, message);
+        public static void LogError(string message) => s_instance.DoLog(LogLevel.Error, message);
 
-        public static void LogVerbose(Exception exception) => s_instance.Log(LogLevel.Verbose, exception);
+        public static void LogVerbose(Exception exception) => s_instance.DoLog(LogLevel.Verbose, exception.ToString());
 
-        public static void LogInfo(Exception exception) => s_instance.Log(LogLevel.Info, exception);
+        public static void LogInfo(Exception exception) => s_instance.DoLog(LogLevel.Info, exception.ToString());
 
-        public static void LogWarning(Exception exception) => s_instance.Log(LogLevel.Warning, exception);
+        public static void LogWarning(Exception exception) => s_instance.DoLog(LogLevel.Warning, exception.ToString());
 
-        public static void LogError(Exception exception) => s_instance.Log(LogLevel.Error, exception);
+        public static void LogError(Exception exception) => s_instance.DoLog(LogLevel.Error, exception.ToString());
+
+        public static void Log(LogLevel level, string message) => s_instance.DoLog(level, message);
 
         private void DoInitialize(LogLevel level, string? logFilePath)
         {
-            var handlers = new List<ILogHandler>();
-            handlers.Add(new ConsoleLogHandler());
-            handlers.Add(new LogAggregatorHandler(LogLevel.Warning));
+            var handlers = new List<ILogHandler>
+            {
+                new ConsoleLogHandler(),
+                new LogAggregatorHandler(LogLevel.Warning)
+            };
+
             if (logFilePath != null)
             {
                 handlers.Add(new FileLogHandler(logFilePath));
@@ -76,29 +81,16 @@ namespace Dwenegar.Doku.Logging
             return _level != LogLevel.None && level >= _level;
         }
 
-        private void Log(LogLevel level, string message)
-        {
-            if (CanLog(level))
-            {
-                DoLog(level, message);
-            }
-        }
-
         private void DoLog(LogLevel level, string message)
         {
-            DateTime date = DateTime.Now;
-            var logRecord = new LogRecord(date, _scope, level, message);
-            for (int i = _handlers.Length; --i >= 0;)
-            {
-                _handlers[i].Handle(ref logRecord);
-            }
-        }
-
-        private void Log(LogLevel level, Exception exception)
-        {
             if (CanLog(level))
             {
-                DoLog(level, exception.ToString());
+                DateTime date = DateTime.Now;
+                var logRecord = new LogRecord(date, _scope, level, message);
+                for (int i = _handlers.Length; --i >= 0;)
+                {
+                    _handlers[i].Handle(ref logRecord);
+                }
             }
         }
 

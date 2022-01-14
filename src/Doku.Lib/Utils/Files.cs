@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
+using System.Linq;
 using System.Text;
 using Dwenegar.Doku.Logging;
 
@@ -62,10 +63,9 @@ namespace Dwenegar.Doku.Utils
             return false;
         }
 
-        public static void CopyDirectory(string? src, string dst, string filter = "*.*")
+        public static int CopyDirectory(string? src, string dst, string filter = "*.*")
         {
-            using Logger.Scope scope = new("CopyDirectory");
-
+            var count = 0;
             if (src != null && Directory.Exists(src))
             {
                 CreateDirectory(dst);
@@ -74,12 +74,11 @@ namespace Dwenegar.Doku.Utils
                     CreateDirectory(path.Replace(src, dst));
                 }
 
-                string[] files = Directory.GetFiles(src, filter, SearchOption.AllDirectories);
-                foreach (var file in files)
-                {
-                    TryCopyFile(file, file.Replace(src, dst));
-                }
+                count += Directory.GetFiles(src, filter, SearchOption.AllDirectories)
+                                  .Count(x => TryCopyFile(x, x.Replace(src, dst)));
             }
+
+            return count;
         }
 
         public static void RemoveIgnoredPaths(string rootPath)

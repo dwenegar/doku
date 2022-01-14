@@ -3,22 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Dwenegar.Doku.Logging;
-using Dwenegar.Doku.Resources;
 using Dwenegar.Doku.Utils;
 
 namespace Dwenegar.Doku
 {
     internal delegate void DocumentationBuildCompletedHandler();
 
-    public sealed class DocumentationBuilder
+    public sealed partial class DocumentationBuilder
     {
         private const string TemplateFolder = "templates/custom";
         private const string PackageDocsGenerationDefine = "PACKAGE_DOCS_GENERATION";
@@ -33,30 +29,28 @@ namespace Dwenegar.Doku
         private bool _hasApiDocs;
         private bool _hasChangeLog;
         private bool _hasLicenses;
-        private bool _hasManual;
         private string? _manualHomePage;
 
+        private PackageInfo? _packageInfo;
+        private ProjectConfig _projectConfig = new();
         private TemplateInfo? _templateInfo;
         private string? _packageManualPath;
-        private ProjectConfig _projectConfig = new();
-        private PackageInfo? _packageInfo;
+        private DocFx? _docFx;
 
         public DocumentationBuilder(string packagePath, string outputPath, string? buildPath)
         {
-            _packagePath = packagePath;
-            _outputPath = outputPath;
-
+            _packagePath = Path.GetFullPath(packagePath);
+            _outputPath = Path.GetFullPath(outputPath);
             _buildPath = buildPath == null
                 ? Path.Combine(Path.GetTempPath(), $"dg-{Path.GetRandomFileName()}")
                 : Path.GetFullPath(buildPath);
+
             _buildManualPath = Path.Combine(_buildPath, "manual");
             _buildSourcesPath = Path.Combine(_buildPath, "src");
         }
 
-        public string? DocFxPath { get; set; }
-
+        public string? DocFxPath { get; init; }
         public bool KeepBuildFolder { get; init; }
-
         public string? TemplatePath { get; init; }
 
         public void Build()
@@ -65,37 +59,25 @@ namespace Dwenegar.Doku
 
             Logger.LogVerbose($"OutputPath: {_outputPath}");
             Logger.LogVerbose($"PackagePath: {_packagePath}");
-            Logger.LogVerbose($"TemplateRoot: {TemplatePath}");
-
-            if (KeepBuildFolder)
-            {
-                Logger.LogInfo($"BuildPath: {_buildPath}");
-            }
-            else
-            {
-                Logger.LogVerbose($"BuildPath: {_buildPath}");
-            }
+            Logger.Log(KeepBuildFolder ? LogLevel.Info : LogLevel.Verbose, $"BuildPath: {_buildPath}");
 
             try
             {
-                LoadPackageJson();
+                CheckDocFx();
+                LoadPackageInfo();
+                LocatePackageManualFolder();
 
-                LocateDocFx();
-                LocateManualFolder();
-
-                LoadConfigJson();
-                LoadTemplateJson();
+                LoadProjectConfig();
+                if (TryLoadTemplateInfo(out TemplateInfo? templateInfo))
+                {
+                    _templateInfo = templateInfo!;
+                }
 
                 DeleteFolders();
 
-                InitializeDocFxProject();
-                CopyTemplateFiles();
-                CopySourceFiles();
-                CopyManualFiles();
-                CopyLogo();
-                CopyFavicon();
-                CopyLicense();
-                CopyChangelog();
+                ExtractDocFxProject();
+
+                CopyResources();
 
                 GenerateCSharpProject();
                 GenerateGlobalMetadataJson();
@@ -113,161 +95,34 @@ namespace Dwenegar.Doku
             }
             finally
             {
-                DeleteBuildFolder();
-            }
-        }
-
-        private void LoadPackageJson()
-        {
-            Logger.LogVerbose("Loading package.json.");
-            using Logger.Scope scope = new("LoadPackageInfo");
-
-            string packageJsonPath = "package.json";
-            if (!string.IsNullOrEmpty(_packagePath))
-            {
-                packageJsonPath = Path.Combine(_packagePath, packageJsonPath);
-            }
-
-            try
-            {
-                packageJsonPath = Path.GetFullPath(packageJsonPath);
-                string packageJsonText = File.ReadAllText(packageJsonPath);
-                _packageInfo = JsonSerializer.Deserialize(packageJsonText, SerializerContext.Default.PackageInfo);
-                if (_packageInfo == null)
+                if (!KeepBuildFolder)
                 {
-                    throw new Exception("Invalid package.json.");
-                }
-
-                Logger.LogVerbose($"Package DisplayName: {_packageInfo.DisplayName}");
-                Logger.LogVerbose($"Package Version: {_packageInfo.Version}");
-            }
-            catch (FileNotFoundException)
-            {
-                throw new Exception($"File {packageJsonPath} does not exist.");
-            }
-        }
-
-        private void LocateDocFx()
-        {
-            Logger.LogVerbose("Locating docfx.exe.");
-            using Logger.Scope scope = new("LocateDocFx");
-
-            static bool ContainsDocFxExe(string? directory)
-            {
-                return !string.IsNullOrEmpty(directory) && File.Exists(Path.Combine(directory, "docfx.exe"));
-            }
-
-            if (DocFxPath == null)
-            {
-                string? envPath = Environment.GetEnvironmentVariable("PATH");
-                DocFxPath = envPath?.Split(Path.PathSeparator).FirstOrDefault(ContainsDocFxExe);
-                if (DocFxPath == null)
-                {
-                    throw new Exception("Could not find docfx.exe in the system path.");
-                }
-            }
-            else if (!ContainsDocFxExe(DocFxPath))
-            {
-                throw new Exception($"{DocFxPath} is not a valid DocFx installation.");
-            }
-
-            Logger.LogVerbose($"DocFxPath: {DocFxPath}");
-
-            var docfx = new DocFx(DocFxPath);
-            Logger.LogVerbose($"Found DocFx version {docfx.Version}");
-        }
-
-        private void LocateManualFolder()
-        {
-            Logger.LogVerbose("Locating manual folder.");
-            using Logger.Scope scope = new("LocateManualFolder");
-
-            string path = Path.Combine(_packagePath, "Documentation~");
-            if (Directory.Exists(path))
-            {
-                _packageManualPath = path;
-                Logger.LogVerbose($"PackageManualPath: {_packageManualPath}");
-            }
-        }
-
-        private void LoadConfigJson()
-        {
-            if (_packageManualPath == null)
-            {
-                _projectConfig = new ProjectConfig();
-                return;
-            }
-
-            Logger.LogVerbose("Loading config.json.");
-            using Logger.Scope scope = new("LoadConfigJson");
-
-            string path = Path.Combine(_packageManualPath, "config.json");
-            if (File.Exists(path))
-            {
-                string json = File.ReadAllText(path);
-                ProjectConfig? projectConfig = JsonSerializer.Deserialize(json, SerializerContext.Default.ProjectConfig);
-                if (projectConfig != null)
-                {
-                    _projectConfig = projectConfig;
-                    Logger.LogVerbose($"Config: {_projectConfig}");
+                    DeleteBuildFolder();
                 }
             }
         }
 
-        private void LoadTemplateJson()
+        private void CopyResources()
         {
-            if (TemplatePath == null)
-            {
-                return;
-            }
-
-            Logger.LogVerbose("Loading template.json.");
-            using Logger.Scope scope = new("LoadTemplateJson");
-
-            string path = Path.Combine(TemplatePath, "template.json");
-            if (!File.Exists(path))
-            {
-                throw new Exception($"Template at {TemplatePath} is missing file template.json.");
-            }
-
-            string json = File.ReadAllText(path, Encoding.UTF8);
-            _templateInfo = JsonSerializer.Deserialize(json, SerializerContext.Default.TemplateInfo);
-            if (_templateInfo == null)
-            {
-                throw new Exception($"Failed to load {path}.");
-            }
-        }
-
-        private void DeleteFolders()
-        {
-            Logger.LogVerbose("Deleting folders.");
-
-            Files.DeleteDirectory(_outputPath);
-            Files.DeleteDirectory(_buildPath);
-        }
-
-        private void InitializeDocFxProject()
-        {
-            Logger.LogVerbose("Initializing the DocFx project.");
-            using Logger.Scope scope = new("InitializeDocFxProject");
-
-            Assembly assembly = typeof(DocumentationBuilder).Assembly;
-            var resourceManager = new ResourceManager(assembly, "Templates");
-            resourceManager.ExportResources("project", _buildPath);
+            using Logger.Scope scope = new("CopyResources");
+            CopyTemplateFiles();
+            CopySourceFiles();
+            CopyManualFiles();
+            CopyLogo();
+            CopyFavicon();
+            CopyLicenses();
+            CopyChangelog();
         }
 
         private void CopyTemplateFiles()
         {
-            if (TemplatePath == null)
+            if (TemplatePath != null)
             {
-                return;
+                Logger.LogVerbose("Copying template files.");
+                using Logger.Scope scope = new("CopyTemplateFiles");
+                string dst = Path.GetFullPath(Path.Combine(_buildPath, TemplateFolder));
+                Files.CopyDirectory(TemplatePath, dst);
             }
-
-            Logger.LogVerbose("Copying template files.");
-            using Logger.Scope scope = new("CopyTemplateFiles");
-
-            string dst = Path.GetFullPath(Path.Combine(_buildPath, TemplateFolder));
-            Files.CopyDirectory(TemplatePath, dst);
         }
 
         private void CopySourceFiles()
@@ -278,15 +133,17 @@ namespace Dwenegar.Doku
                 return;
             }
 
-            Logger.LogVerbose("Copying source files.");
             using Logger.Scope scope = new("CopySourceFiles");
+            Logger.LogVerbose("Copying source files.");
 
-            _hasApiDocs = true;
-            foreach (var source in _projectConfig.Sources)
+            int count = _projectConfig.Sources.Sum(x => CopyFiles(x));
+            _hasApiDocs = count > 0;
+
+            int CopyFiles(string source)
             {
-                Files.CopyDirectory(Path.Combine(_packagePath, source),
-                                    Path.Combine(_buildSourcesPath, source),
-                                    "*.cs");
+                return Files.CopyDirectory(Path.Combine(_packagePath, source),
+                                           Path.Combine(_buildSourcesPath, source),
+                                           "*.cs");
             }
         }
 
@@ -294,17 +151,15 @@ namespace Dwenegar.Doku
         {
             if (_projectConfig.Excludes.Manual)
             {
-                Logger.LogInfo("Skipping copying manual files.");
                 return;
             }
 
-            Logger.LogVerbose("Copying manual files.");
             using Logger.Scope scope = new("CopyManualFiles");
+            Logger.LogVerbose("Copying manual files.");
 
             Files.CopyDirectory(_packageManualPath, _buildManualPath);
 
-            _hasManual = Directory.EnumerateFiles(_buildManualPath, "*.md", SearchOption.AllDirectories).Any();
-            if (!_hasManual)
+            if (!Directory.EnumerateFiles(_buildManualPath, "*.md", SearchOption.AllDirectories).Any())
             {
                 return;
             }
@@ -338,65 +193,19 @@ namespace Dwenegar.Doku
             }
         }
 
-        private void GenerateManualTableOfContents(IEnumerable<string> manualFiles, string tocSourcePath)
-        {
-            Logger.LogVerbose("Generating manual's table of contents.");
-            using Logger.Scope scope = new("GenerateManualTableOfContents");
-
-            TocEntry root = new(null, null);
-
-            foreach (string file in manualFiles)
-            {
-                string href = Path.GetRelativePath(_buildManualPath, file).Replace('\\', '/');
-                string title = TocHelper.GetTitleForFile(file);
-                root.AddEntry(title, href);
-            }
-
-            static void AppendTocSection(StringBuilder sb, TocEntry entry, int indent)
-            {
-                Logger.LogVerbose($"AppendTocSection entry={entry} indent={indent}");
-
-                sb.Append(' ', indent).Append("- name: ").AppendLine(entry.Title);
-                if (entry.Href != null)
-                {
-                    sb.Append(' ', indent).Append("  href: ").AppendLine(entry.Href);
-                }
-
-                if (entry.Entries.Any())
-                {
-                    sb.Append(' ', indent).AppendLine("  items:");
-                    foreach (TocEntry tocEntry in entry.Entries)
-                    {
-                        AppendTocSection(sb, tocEntry, indent + 2);
-                    }
-                }
-            }
-
-            StringBuilder sb = new();
-            foreach (var entry in root.Entries)
-            {
-                AppendTocSection(sb, entry, 0);
-            }
-
-            Files.WriteText(tocSourcePath, sb.ToString());
-        }
-
-        private void CopyLicense()
+        private void CopyLicenses()
         {
             if (_projectConfig.Excludes.License)
             {
-                Logger.LogInfo("Skipping copying license files.");
                 return;
             }
 
             Logger.LogVerbose("Copying license files.");
-            using Logger.Scope scope = new("CopyLicense");
 
             var toc = new StringBuilder();
 
             if (TryCopyPackageFileToBuildFolder("LICENSE.md", "license/LICENSE.md"))
             {
-                _hasLicenses = true;
                 toc.AppendLine("- name: License") //
                    .AppendLine("  href: LICENSE.md");
             }
@@ -404,13 +213,14 @@ namespace Dwenegar.Doku
             if (TryCopyPackageFileToBuildFolder("Third Party Notices.md", "license/ThirdPartyNotices.md")
                 || TryCopyPackageFileToBuildFolder("ThirdPartyNotices.md", "license/ThirdPartyNotices.md"))
             {
-                _hasLicenses = true;
                 toc.AppendLine("- name: Third Party Notices") //
                    .AppendLine("  href: ThirdPartyNotices.md");
             }
 
-            if (_hasLicenses)
+            if (toc.Length > 0)
             {
+                _hasLicenses = true;
+
                 string destinationFolder = Path.Combine(_buildPath, "license");
                 Directory.CreateDirectory(destinationFolder);
 
@@ -424,40 +234,30 @@ namespace Dwenegar.Doku
 
         private void CopyLogo()
         {
-            if (_packageManualPath == null)
+            if (_packageManualPath != null)
             {
-                return;
+                Logger.LogVerbose("Copying logo file.");
+                Files.TryCopyFile("logo.svg", _packageManualPath, _buildPath);
             }
-
-            Logger.LogVerbose("Copying logo file.");
-            using Logger.Scope scope = new("CopyLogo");
-
-            Files.TryCopyFile("logo.svg", _packageManualPath, _buildPath);
         }
 
         private void CopyFavicon()
         {
-            if (_packageManualPath == null)
+            if (_packageManualPath != null)
             {
-                return;
+                Logger.LogVerbose("Copying favicon file.");
+                Files.TryCopyFile("favicon.ico", _packageManualPath, _buildPath);
             }
-
-            Logger.LogVerbose("Copying favicon file.");
-            using Logger.Scope scope = new("CopyFavicon");
-
-            Files.TryCopyFile("favicon.ico", _packageManualPath, _buildPath);
         }
 
         private void CopyChangelog()
         {
             if (_projectConfig.Excludes.Changelog)
             {
-                Logger.LogInfo("Skipping changelog file.");
                 return;
             }
 
             Logger.LogVerbose("Copying changelog file.");
-            using Logger.Scope scope = new("CopyChangelog");
 
             if (TryCopyPackageFileToBuildFolder("CHANGELOG.md", "changelog/CHANGELOG.md"))
             {
@@ -478,168 +278,13 @@ namespace Dwenegar.Doku
             }
         }
 
-        private void GenerateCSharpProject()
-        {
-            Logger.LogVerbose("Generating the C# project.");
-            using Logger.Scope scope = new("GenerateCSharpProject");
-
-            const string projectTemplate =
-                "<Project ToolsVersion=\"4.0\" DefaultTargets=\"FullPublish\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n"
-                + "  <PropertyGroup>\n"
-                + "    <DefineConstants>{0}</DefineConstants>\n"
-                + "  </PropertyGroup>\n"
-                + "  <ItemGroup>\n"
-                + "{1}"
-                + "  </ItemGroup>\n"
-                + "  <Import Project=\"$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />\n"
-                + "</Project>\n";
-
-            string GetDefineConstants()
-            {
-                var sb = new StringBuilder();
-                sb.Append(PackageDocsGenerationDefine);
-                foreach (string defineConstant in _projectConfig.DefineConstants)
-                {
-                    sb.Append(';').Append(defineConstant);
-                }
-
-                return sb.ToString();
-            }
-
-            string GetCompileItems()
-            {
-                var sb = new StringBuilder();
-                foreach (string cs in Directory.GetFiles(_buildSourcesPath, "*.cs", SearchOption.AllDirectories))
-                {
-                    sb.Append(@"    <Compile Include=""").Append(cs).AppendLine(@"""/>");
-                }
-
-                return sb.ToString();
-            }
-
-            Directory.CreateDirectory(_buildSourcesPath);
-            var projectContent = string.Format(projectTemplate, GetDefineConstants(), GetCompileItems());
-            Files.WriteText(Path.Combine(_buildSourcesPath, "doku.csproj"), projectContent);
-        }
-
-        private void GenerateGlobalMetadataJson()
-        {
-            Debug.Assert(_packageInfo != null, "_packageInfo != null");
-
-            Logger.LogVerbose("Generating globalMetadata.json");
-            using Logger.Scope scope = new("GenerateGlobalMetadataJson");
-
-            string sourceFile = Path.Combine(_buildPath, "globalMetadata.json.in");
-            string source = File.ReadAllText(sourceFile);
-
-            source = source.Replace("$APP_TITLE", _packageInfo.DisplayName)
-                           .Replace("$PACKAGE_VERSION", _packageInfo.Version)
-                           .Replace("$ENABLE_SEARCH", _projectConfig.EnableSearch.ToString().ToLower());
-
-            string destinationFile = Path.Combine(_buildPath, "globalMetadata.json");
-
-            Files.WriteText(destinationFile, source);
-        }
-
-        private void GenerateDocFxJson()
-        {
-            Logger.LogVerbose("Generating docfx.json");
-            using Logger.Scope scope = new("GenerateDocFxJson");
-
-            var template = new StringBuilder();
-            if (_templateInfo == null || _templateInfo.Type != TemplateType.Full)
-            {
-                template.Append(@"""default""");
-            }
-
-            if (_templateInfo != null)
-            {
-                if (_templateInfo.Type == TemplateType.Partial)
-                {
-                    template.Append(", ");
-                }
-
-                template.Append('"').Append(TemplateFolder).Append('"');
-            }
-
-            string srcPath = Path.Combine(_buildPath, "docfx.json.in");
-            string json = File.ReadAllText(srcPath);
-
-            json = json.Replace("$DISABLE_DEFAULT_FILTER", _projectConfig.DisableDefaultFilter.ToString().ToLower())
-                       .Replace("$TEMPLATE", template.ToString());
-
-            string dstPath = Path.Combine(_buildPath, "docfx.json");
-            Files.WriteText(dstPath, json);
-        }
-
-        private void GenerateTableOfContents()
-        {
-            Logger.LogVerbose("Generating toc.yml");
-            using Logger.Scope scope = new("GenerateTableOfContent");
-
-            var toc = new StringBuilder();
-            if (_hasManual)
-            {
-                toc.AppendLine("- name: Manual") //
-                   .AppendLine("  href: manual/") //
-                   .Append("  homepage: ")
-                   .AppendLine(_manualHomePage);
-            }
-
-            if (_hasApiDocs)
-            {
-                toc.AppendLine("- name: API Documentation") //
-                   .AppendLine("  href: api/") //
-                   .AppendLine("  homepage: api/index.md");
-            }
-
-            if (_hasChangeLog)
-            {
-                toc.AppendLine("- name: Changes") //
-                   .AppendLine("  href: changelog/");
-            }
-
-            if (_hasLicenses)
-            {
-                toc.AppendLine("- name: License") //
-                   .AppendLine("  href: license/");
-            }
-
-            string dstPath = Path.Combine(_buildPath, "toc.yml");
-            Files.WriteText(dstPath, toc.ToString());
-        }
-
-        private void RunDocFx()
-        {
-            Logger.LogVerbose("Running docfx.");
-            using Logger.Scope scope = new("RunDocFx");
-
-            var docFx = new DocFx(DocFxPath);
-            string docFxJsonFile = Path.Combine(_buildPath, "docfx.json");
-            docFx.Run(docFxJsonFile, _buildPath);
-        }
-
         private void CopyFilesToOutputFolder()
         {
-            Logger.LogVerbose("Copying files to output folder.");
             using Logger.Scope scope = new("CopyFilesToOutputFolder");
 
+            Logger.LogVerbose($"Copying files to {_outputPath}.");
             string sourcePath = Path.Combine(_buildPath, "_site");
-            Directory.CreateDirectory(_outputPath);
             Files.CopyDirectory(sourcePath, _outputPath);
-        }
-
-        private void DeleteBuildFolder()
-        {
-            if (KeepBuildFolder)
-            {
-                return;
-            }
-
-            Logger.LogVerbose("Deleting the build folder.");
-            using Logger.Scope scope = new("DeleteBuildFolder");
-
-            Files.DeleteDirectory(_buildPath);
         }
 
         private bool TryCopyPackageFileToBuildFolder(string fileName, string? destinationFileName = null)
@@ -667,17 +312,7 @@ namespace Dwenegar.Doku
 
             public override string ToString()
             {
-                var sb = new StringBuilder();
-                sb.Append("DisableDefaultFilter = ").Append(DisableDefaultFilter).AppendLine();
-                sb.Append("EnableSearch = ").Append(EnableSearch).AppendLine();
-                sb.Append("DefineConstants = ").AppendLine(string.Join(',', DefineConstants));
-                sb.AppendLine("Excludes = {");
-                sb.Append("  ApiDocs = ").Append(Excludes.ApiDocs).AppendLine();
-                sb.Append("  Manual = ").Append(Excludes.Manual).AppendLine();
-                sb.Append("  License = ").Append(Excludes.License).AppendLine();
-                sb.Append("  Changelog = ").Append(Excludes.Changelog).AppendLine();
-                sb.AppendLine("}");
-                return sb.ToString();
+                return JsonSerializer.Serialize(this, SerializerContext.Default.ProjectConfig);
             }
         }
 

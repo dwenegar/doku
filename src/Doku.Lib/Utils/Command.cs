@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
-using Dwenegar.Doku.Logging;
 
 namespace Dwenegar.Doku.Utils
 {
@@ -26,8 +25,6 @@ namespace Dwenegar.Doku.Utils
     {
         public static string Run(CommandInfo ci, string errorMessage)
         {
-            Logger.LogVerbose($"Running {ci.FileName} {ci.Arguments} in \"{ci.WorkingDirectory}\"");
-
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -100,9 +97,7 @@ namespace Dwenegar.Doku.Utils
                     string? line = _stream.ReadLine();
                     while (line != null)
                     {
-                        _lineRead?.Invoke(line);
-                        _lines.Add(line);
-
+                        OnLineRead(line);
                         line = _stream.ReadLine();
                     }
                 }
