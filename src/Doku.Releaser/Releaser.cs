@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,7 +37,7 @@ namespace Dwenegar.Doku.Releaser
 
         public async Task MakeRelease(BuildResult buildResult)
         {
-            var (version, changelog, assets) = buildResult;
+            (string version, string changelog, IEnumerable<ReleaseAssetInfo> assets) = buildResult;
             Release release = await UpdateOrCreateRelease(version, changelog);
             await UploadReleaseAssets(release, assets);
         }
@@ -86,7 +85,7 @@ namespace Dwenegar.Doku.Releaser
                                                                 release.Id,
                                                                 ApiOptions.None);
 
-            foreach (var entry in entries)
+            foreach (ReleaseAssetInfo entry in entries)
             {
                 await UploadReleaseAsset(release, entry);
             }
@@ -94,11 +93,9 @@ namespace Dwenegar.Doku.Releaser
 
         private async Task UploadReleaseAsset(Release release, ReleaseAssetInfo entry)
         {
-            Debug.Assert(_assets != null, "_assets != null");
-
             using Logger.Scope scope = new("UploadReleaseAsset");
 
-            if (_assets.Any(x => x.Name == entry.Name))
+            if (_assets!.Any(x => x.Name == entry.Name))
             {
                 return;
             }
@@ -153,11 +150,9 @@ namespace Dwenegar.Doku.Releaser
 
         private async Task<bool> TryDeleteAsset(ReleaseAssetInfo entry)
         {
-            Debug.Assert(_assets != null, "_assets != null");
-
             try
             {
-                ReleaseAsset? assetToDelete = _assets.FirstOrDefault(x => x.Name == entry.Name);
+                ReleaseAsset? assetToDelete = _assets!.FirstOrDefault(x => x.Name == entry.Name);
                 if (assetToDelete != null)
                 {
                     await _gh.Repository.Release.DeleteAsset(_user, _repository, assetToDelete.Id);

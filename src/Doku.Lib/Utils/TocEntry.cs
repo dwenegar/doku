@@ -48,6 +48,8 @@ namespace Dwenegar.Doku.Utils
             return entry;
         }
 
+        public override string ToString() => $"ID={_id} Href={Href} Title={Title} Parent={Parent?._id ?? -1}";
+
         private TocEntry GetParentEntry(string path)
         {
             string entryName = Path.GetFileName(path);
@@ -63,7 +65,5 @@ namespace Dwenegar.Doku.Utils
 
             return AddEntry(entryName, path);
         }
-
-        public override string ToString() => $"ID={_id} Href={Href} Title={Title} Parent={Parent?._id ?? -1}";
     }
 }

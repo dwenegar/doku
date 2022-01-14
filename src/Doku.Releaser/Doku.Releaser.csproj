@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Doku.Lib\Doku.Lib.csproj" />
+    <ProjectReference Include="..\Doku.Lib\Doku.Lib.csproj"/>
   </ItemGroup>
 
   <PropertyGroup>

@@ -25,6 +25,8 @@ namespace Dwenegar.Doku.Resources
                                         .ToArray();
         }
 
+        ~ResourceReader() => Dispose(false);
+
         public IEnumerable<(string, Stream)> GetResourceStreams()
         {
             ThrowIfDisposed();
@@ -65,11 +67,6 @@ namespace Dwenegar.Doku.Resources
             {
                 throw new ObjectDisposedException(nameof(ResourceReader));
             }
-        }
-
-        ~ResourceReader()
-        {
-            Dispose(false);
         }
     }
 }

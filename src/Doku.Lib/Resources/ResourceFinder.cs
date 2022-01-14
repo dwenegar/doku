@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Dwenegar.Doku.Logging;
 
 namespace Dwenegar.Doku.Resources
 {
@@ -41,10 +39,13 @@ namespace Dwenegar.Doku.Resources
 
         private bool IsMatch(string embeddedResourceName, string resourceName)
         {
-            return !string.IsNullOrEmpty(resourceName)
-                   && Path.GetFileNameWithoutExtension(embeddedResourceName)
-                          .Substring(_resourcePrefix.Length)
-                          .Equals(resourceName, StringComparison.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(resourceName))
+            {
+                return false;
+            }
+
+            string filename = Path.GetFileNameWithoutExtension(embeddedResourceName);
+            return filename[_resourcePrefix.Length..].Equals(resourceName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

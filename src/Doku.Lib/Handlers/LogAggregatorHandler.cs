@@ -24,7 +24,7 @@ namespace Dwenegar.Doku.Logging
 
         public override void Handle(ref LogRecord logRecord)
         {
-            if (_recordsByLevel.TryGetValue(logRecord.Level, out var records))
+            if (_recordsByLevel.TryGetValue(logRecord.Level, out List<LogRecord>? records))
             {
                 records.Add(logRecord);
             }
@@ -55,7 +55,7 @@ namespace Dwenegar.Doku.Logging
 
         private void WriteRecords()
         {
-            foreach (var (_, records) in _recordsByLevel)
+            foreach ((LogLevel _, List<LogRecord> records) in _recordsByLevel)
             {
                 for (var i = 0; i < records.Count; i++)
                 {
@@ -67,7 +67,7 @@ namespace Dwenegar.Doku.Logging
 
         private void WriteFooter(LogLevel level)
         {
-            foreach ((LogLevel l, var records) in _recordsByLevel)
+            foreach ((LogLevel l, List<LogRecord> records) in _recordsByLevel)
             {
                 ConsoleUtils.WriteLine($"\t{records.Count} {l}(s)", level.ToConsoleColor());
             }

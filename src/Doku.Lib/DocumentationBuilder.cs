@@ -318,10 +318,7 @@ namespace Dwenegar.Doku
             public string[] DefineConstants { get; set; } = Array.Empty<string>();
             public string[] Sources { get; set; } = { "Editor", "Runtime" };
 
-            public override string ToString()
-            {
-                return JsonSerializer.Serialize(this, SerializerContext.Default.ProjectConfig);
-            }
+            public override string ToString() => JsonSerializer.Serialize(this, SerializerContext.Default.ProjectConfig);
         }
 
         [Serializable]

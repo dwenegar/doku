@@ -31,7 +31,7 @@ namespace Dwenegar.Doku.Releaser
 
             _srcPath = Path.Combine(rootPath, "src");
             _dokuPath = Path.Combine(_srcPath, "doku");
-            _dokuReleasePath = Path.Combine(_dokuPath, "bin", "Release", "net6.0");
+            _dokuReleasePath = Path.Combine(_dokuPath, "bin/Release/net6.0");
         }
 
         public BuildResult Build()

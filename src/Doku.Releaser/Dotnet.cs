@@ -17,18 +17,14 @@ namespace Dwenegar.Doku.Releaser
         private Version? _version;
 
         public Dotnet(string? path)
-        {
-            _path = path ?? throw new ArgumentNullException(nameof(path));
-        }
+            => _path = path ?? throw new ArgumentNullException(nameof(path));
 
         public Version? Version => _version ??= GetVersion();
 
         public string GetPath() => _path;
 
         public void Run(string arguments, string workingDirectory)
-        {
-            Run(arguments, workingDirectory, true);
-        }
+            => Run(arguments, workingDirectory, true);
 
         private static void OnProgramOutput(string line)
         {
@@ -46,10 +42,7 @@ namespace Dwenegar.Doku.Releaser
             }
         }
 
-        private string Run(string arguments,
-                           string workingDirectory,
-                           bool withLog)
-        {
+        private string Run(string arguments, string workingDirectory, bool withLog) {
             Action<string>? outputCallback = null;
             if (withLog)
             {

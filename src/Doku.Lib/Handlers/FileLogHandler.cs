@@ -12,19 +12,13 @@ namespace Dwenegar.Doku.Logging.Handlers
         private readonly TextWriter _writer;
 
         public FileLogHandler(string path)
-        {
-            _writer = CreateWriter(path);
-        }
+            => _writer = CreateWriter(path);
 
         public override void Close()
-        {
-            _writer.Close();
-        }
+            => _writer.Close();
 
         public override void Handle(ref LogRecord logRecord)
-        {
-            _writer.WriteLine(FormatRecord(ref logRecord));
-        }
+            => _writer.WriteLine(FormatRecord(ref logRecord));
 
         private static TextWriter CreateWriter(string path)
         {

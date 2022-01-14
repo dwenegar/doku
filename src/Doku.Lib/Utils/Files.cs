@@ -41,14 +41,10 @@ namespace Dwenegar.Doku.Utils
         }
 
         public static void MoveFile(string filename, string srcDir, string dstDir)
-        {
-            MoveFile(Path.Combine(srcDir, filename), Path.Combine(dstDir, filename));
-        }
+            => MoveFile(Path.Combine(srcDir, filename), Path.Combine(dstDir, filename));
 
         public static void TryCopyFile(string filename, string srcDir, string dstDir)
-        {
-            TryCopyFile(Path.Combine(srcDir, filename), Path.Combine(dstDir, filename));
-        }
+            => TryCopyFile(Path.Combine(srcDir, filename), Path.Combine(dstDir, filename));
 
         public static bool TryCopyFile(string src, string dst)
         {

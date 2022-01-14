@@ -23,15 +23,9 @@ namespace Dwenegar.Doku.Logging
 
         public static LogLevel Level => s_instance._level;
 
-        public static void Initialize(LogLevel level, string? logFilePath)
-        {
-            s_instance.DoInitialize(level, logFilePath);
-        }
+        public static void Initialize(LogLevel level, string? logFilePath) => s_instance.DoInitialize(level, logFilePath);
 
-        public static void Shutdown()
-        {
-            s_instance.CloseHandlers();
-        }
+        public static void Shutdown() => s_instance.CloseHandlers();
 
         public static void LogVerbose(string message) => s_instance.DoLog(LogLevel.Verbose, message);
 
@@ -77,9 +71,7 @@ namespace Dwenegar.Doku.Logging
         }
 
         private bool CanLog(LogLevel level)
-        {
-            return _level != LogLevel.None && level >= _level;
-        }
+            => _level != LogLevel.None && level >= _level;
 
         private void DoLog(LogLevel level, string message)
         {

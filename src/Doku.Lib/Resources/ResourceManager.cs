@@ -15,9 +15,7 @@ namespace Dwenegar.Doku.Resources
         private readonly ResourceFinder _finder;
 
         public ResourceManager(Assembly assembly, string rootNamespace)
-        {
-            _finder = new ResourceFinder(assembly, rootNamespace);
-        }
+            => _finder = new ResourceFinder(assembly, rootNamespace);
 
         public void ExportResources(string archiveName, string outputDirectory)
         {
@@ -29,7 +27,7 @@ namespace Dwenegar.Doku.Resources
                 throw new Exception($"Could not find resource `{archiveName}`");
             }
 
-            foreach (var (resourceName, resourceStream) in templateResource.GetResourceStreams())
+            foreach ((string resourceName, Stream resourceStream) in templateResource.GetResourceStreams())
             {
                 string targetPath = Path.Combine(outputDirectory, resourceName);
                 Files.CreateDirectory(Path.GetDirectoryName(targetPath));
