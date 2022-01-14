@@ -27,6 +27,7 @@ namespace Dwenegar.Doku
             {
                 DocFxPath = options.DocFxPath,
                 TemplatePath = options.TemplatePath,
+                StyleSheetPath = options.StyleSheetPath,
                 KeepBuildFolder = options.KeepBuildFolder
             };
 

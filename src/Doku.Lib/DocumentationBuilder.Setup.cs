@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using Dwenegar.Doku.Logging;
 using Dwenegar.Doku.Resources;
+using Dwenegar.Doku.Utils;
 
 namespace Dwenegar.Doku
 {
@@ -59,6 +60,28 @@ namespace Dwenegar.Doku
             }
         }
 
+        private bool TryCopyStyle()
+        {
+            string? stylesheetPath = null;
+            if (StyleSheetPath != null)
+            {
+                stylesheetPath = Path.GetFullPath(StyleSheetPath);
+            }
+            else if (_packageManualPath != null)
+            {
+                stylesheetPath = Path.Combine(_packageManualPath, "style.css");
+            }
+
+            if (stylesheetPath != null)
+            {
+                Logger.LogVerbose("Copying custom stylesheet.");
+                string dst = Path.Combine(_buildPath, TemplateFolder, "styles/main.css");
+                return Files.TryCopyFile(stylesheetPath, dst);
+            }
+
+            return false;
+        }
+
         private bool TryLoadTemplateInfo(out TemplateInfo? templateInfo)
         {
             templateInfo = null;
@@ -67,7 +90,7 @@ namespace Dwenegar.Doku
                 return false;
             }
 
-            Logger.LogVerbose("Loading template.json.");
+            Logger.LogVerbose("Loading template.json");
 
             string templatePath = Path.GetFullPath(TemplatePath);
             if (!Directory.Exists(templatePath))

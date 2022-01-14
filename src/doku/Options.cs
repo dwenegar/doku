@@ -15,6 +15,9 @@ namespace Dwenegar.Doku
         [Option('t', "template", HelpText = "Path to the template directory")]
         public string? TemplatePath { get; set; }
 
+        [Option('s', "style", HelpText = "Path to the custom stylesheet")]
+        public string? StyleSheetPath { get; set; }
+
         [Option("with-docfx", HelpText = "Which DocFx installation to use")]
         public string? DocFxPath { get; set; }
 

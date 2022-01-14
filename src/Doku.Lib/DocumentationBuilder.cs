@@ -52,6 +52,7 @@ namespace Dwenegar.Doku
         public string? DocFxPath { get; init; }
         public bool KeepBuildFolder { get; init; }
         public string? TemplatePath { get; init; }
+        public string? StyleSheetPath { get; init; }
 
         public void Build()
         {
@@ -71,6 +72,13 @@ namespace Dwenegar.Doku
                 if (TryLoadTemplateInfo(out TemplateInfo? templateInfo))
                 {
                     _templateInfo = templateInfo!;
+                }
+                else if (TryCopyStyle())
+                {
+                    _templateInfo = new TemplateInfo
+                    {
+                        Type = TemplateType.Partial
+                    };
                 }
 
                 DeleteFolders();
