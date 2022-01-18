@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 0.4.1
+
+### Bug Fixes
+
+* fix the custom stylesheet being deleted after being copied into the build folder
+
+
 ## 0.4.0
 
 ### Code Refactoring
