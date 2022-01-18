@@ -62,6 +62,8 @@ namespace Dwenegar.Doku
 
             try
             {
+                DeleteFolders();
+
                 CheckDocFx();
                 LoadPackageInfo();
                 LocatePackageManualFolder();
@@ -78,8 +80,6 @@ namespace Dwenegar.Doku
                         Type = TemplateType.Partial
                     };
                 }
-
-                DeleteFolders();
 
                 ExtractDocFxProject();
 
