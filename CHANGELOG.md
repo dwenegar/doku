@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 0.5.2
+
+### Features
+
+* copy generated PDF file to the output directory
+
+
 ## 0.5.1
 
 ### Bug Fixes
