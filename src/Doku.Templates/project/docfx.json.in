@@ -132,6 +132,9 @@
           "obj/**",
           "_site_pdf/**"
         ]
+      },
+      {
+        "files": "pdf/toc.yml"
       }
     ],
     "overwrite": [
@@ -146,24 +149,11 @@
       }
     ],
     "dest": "_site_pdf",
-    "globalMetadataFiles": [
-      "globalMetadata.json"
-    ],
-    "fileMetadataFiles": [
-      "fileMetadata.json"
-    ],
-    "template": [
-      "templates/custom"
-    ],
-    "postProcessors": [],
     "markdownEngineName": "markdig",
     "noLangKeyword": false,
     "keepFileLink": false,
     "cleanupCacheHistory": false,
     "disableGitFeatures": false,
-    "xrefService": [
-      "https://xref.docs.microsoft.com/query?uid={uid}"
-    ],
     "wkhtmltopdf": {
       "additionalArguments": "--enable-local-file-access"
     }
