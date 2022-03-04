@@ -302,6 +302,12 @@ namespace Dwenegar.Doku
             Logger.LogVerbose($"Copying files to {_outputPath}.");
             string sourcePath = Path.Combine(_buildPath, "_site");
             Files.CopyDirectory(sourcePath, _outputPath);
+
+            var pdfFileName = $"{Path.GetFileName(_buildPath)}_pdf.pdf";
+
+            string source = Path.Combine(_buildPath, "_site_pdf", pdfFileName);
+            string destination = Path.Combine(_outputPath, $"{_packageInfo!.DisplayName}.pdf");
+            Files.TryCopyFile(source, destination);
         }
 
         private bool TryCopyPackageFileToBuildFolder(string fileName, string? destinationFileName = null)
