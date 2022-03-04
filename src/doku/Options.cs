@@ -8,7 +8,10 @@ namespace Dwenegar.Doku
     internal sealed class Options
     {
         [Option('o', "output", Default = "docs", HelpText = "Path to write the files to")]
-        public string OutputPath { get; set; } = null!;
+        public string OutputPath { get; set; } = "docs";
+
+        [Option('S', "source", Default = "Documentation~", HelpText = "Path to the documentation source")]
+        public string SourcePath { get; set; } = "Documentation~";
 
         [Option('t', "template", HelpText = "Path to the template directory")]
         public string? TemplatePath { get; set; }
@@ -34,6 +37,6 @@ namespace Dwenegar.Doku
         public string? LogFilePath { get; set; }
 
         [Value(0, MetaName = "package", Hidden = true, Default = ".")]
-        public string PackagePath { get; set; } = null!;
+        public string PackagePath { get; set; } = ".";
     }
 }

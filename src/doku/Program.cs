@@ -21,7 +21,7 @@ namespace Dwenegar.Doku
         {
             Logger.Initialize(options.LogLevel, options.LogFilePath);
 
-            DocumentationBuilder builder = new(options.PackagePath, options.OutputPath, options.BuildPath)
+            DocumentationBuilder builder = new(options.PackagePath, options.SourcePath, options.OutputPath, options.BuildPath)
             {
                 DocFxPath = options.DocFxPath,
                 TemplatePath = options.TemplatePath,

@@ -111,7 +111,7 @@ namespace Dwenegar.Doku
         {
             Logger.LogVerbose("Locating manual folder.");
 
-            string path = Path.Combine(_packagePath, "Documentation~");
+            string path = Path.Combine(_packagePath, _sourcePath);
             if (Directory.Exists(path))
             {
                 _packageManualPath = path;
