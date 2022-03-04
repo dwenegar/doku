@@ -124,6 +124,42 @@ namespace Dwenegar.Doku
             Files.WriteText(dstPath, toc.ToString());
         }
 
+        private void GeneratePdfTableOfContents()
+        {
+            using Logger.Scope scope = new("GeneratePdfTableOfContents");
+            Logger.LogVerbose("Generating toc.yml");
+
+            var toc = new StringBuilder();
+            if (_manualHomePage != null)
+            {
+                toc.AppendLine("- name: Manual") //
+                   .AppendLine("  href: ../manual/toc.yml");
+            }
+
+            if (_hasApiDocs)
+            {
+                toc.AppendLine("- name: API Documentation") //
+                   .AppendLine("  href: ../api/toc.yml");
+            }
+
+            if (_hasChangeLog)
+            {
+                toc.AppendLine("- name: Changes") //
+                   .AppendLine("  href: changelog/toc.yml");
+            }
+
+            if (_hasLicenses)
+            {
+                toc.AppendLine("- name: License") //
+                   .AppendLine("  href: license/toc.tml");
+            }
+
+            string destinationFolder = Path.Combine(_buildPath, "pdf");
+            Directory.CreateDirectory(destinationFolder);
+            string dstPath = Path.Combine(destinationFolder, "toc.yml");
+            Files.WriteText(dstPath, toc.ToString());
+        }
+
         private void GenerateGlobalMetadataJson()
         {
             using Logger.Scope scope = new("GenerateGlobalMetadataJson");

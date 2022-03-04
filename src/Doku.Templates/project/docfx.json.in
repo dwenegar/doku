@@ -89,5 +89,83 @@
     "xrefService": [
       "https://xref.docs.microsoft.com/query?uid={uid}"
     ]
+  },
+  "pdf": {
+    "noStdin": true,
+    "content": [
+      {
+        "files": [
+          "api/**.yml",
+          "api/index.md"
+        ]
+      },
+      {
+        "files": [
+          "manual/**.md",
+          "manual/**/toc.yml",
+          "changelog/**.md",
+          "changelog/**/toc.yml",
+          "license/**.md",
+          "license/**/toc.yml",
+          "toc.yml",
+          "*.md"
+        ],
+        "exclude": [
+          "obj/**",
+          "_site_pdf/**"
+        ]
+      },
+      {
+        "files": "pdf/toc.yml"
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**",
+          "manual/images/**",
+          "files/**",
+          "manual/files/**",
+          "logo.svg"
+        ],
+        "exclude": [
+          "obj/**",
+          "_site_pdf/**"
+        ]
+      }
+    ],
+    "overwrite": [
+      {
+        "files": [
+          "apidoc/**.md"
+        ],
+        "exclude": [
+          "obj/**",
+          "_site_pdf/**"
+        ]
+      }
+    ],
+    "dest": "_site_pdf",
+    "globalMetadataFiles": [
+      "globalMetadata.json"
+    ],
+    "fileMetadataFiles": [
+      "fileMetadata.json"
+    ],
+    "template": [
+      "templates/custom"
+    ],
+    "postProcessors": [],
+    "markdownEngineName": "markdig",
+    "noLangKeyword": false,
+    "keepFileLink": false,
+    "cleanupCacheHistory": false,
+    "disableGitFeatures": false,
+    "xrefService": [
+      "https://xref.docs.microsoft.com/query?uid={uid}"
+    ],
+    "wkhtmltopdf": {
+      "additionalArguments": "--enable-local-file-access"
+    }
   }
 }

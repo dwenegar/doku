@@ -91,6 +91,7 @@ namespace Dwenegar.Doku
                 GenerateGlobalMetadataJson();
                 GenerateDocFxJson();
                 GenerateTableOfContents();
+                GeneratePdfTableOfContents();
 
                 RunDocFx();
 
@@ -212,14 +213,22 @@ namespace Dwenegar.Doku
 
             var toc = new StringBuilder();
 
-            if (TryCopyPackageFileToBuildFolder("LICENSE.md", "license/LICENSE.md"))
+            string[] licenseFiles = { "LICENSE.md", "LICENSE.text" };
+            if (licenseFiles.Any(x => TryCopyPackageFileToBuildFolder(x, "license/LICENSE.md")))
             {
                 toc.AppendLine("- name: License") //
                    .AppendLine("  href: LICENSE.md");
             }
 
-            if (TryCopyPackageFileToBuildFolder("Third Party Notices.md", "license/ThirdPartyNotices.md")
-                || TryCopyPackageFileToBuildFolder("ThirdPartyNotices.md", "license/ThirdPartyNotices.md"))
+            string[] thirdPartyLicenseFiles =
+            {
+                "Third Party Notices.md",
+                "ThirdPartyNotices.md",
+                "Third Party Notices.txt",
+                "ThirdPartyNotices.txt"
+            };
+
+            if (thirdPartyLicenseFiles.Any(x => TryCopyPackageFileToBuildFolder(x, "license/ThirdPartyNotices.md")))
             {
                 toc.AppendLine("- name: Third Party Notices") //
                    .AppendLine("  href: ThirdPartyNotices.md");
@@ -324,10 +333,10 @@ namespace Dwenegar.Doku
         [Serializable]
         internal sealed class ProjectConfigExcludes
         {
-            public bool ApiDocs { get; set; } = false;
-            public bool Manual { get; set; } = false;
-            public bool License { get; set; } = false;
-            public bool Changelog { get; set; } = false;
+            public bool ApiDocs { get; set; }
+            public bool Manual { get; set; }
+            public bool License { get; set; }
+            public bool Changelog { get; set; }
         }
     }
 }
