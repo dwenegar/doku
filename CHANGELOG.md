@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 0.6.0
+
+### Features
+
+* add --pdf option
+
+
 ## 0.5.2
 
 ### Features
