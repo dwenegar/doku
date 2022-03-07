@@ -126,7 +126,8 @@ namespace Dwenegar.Doku
             Logger.LogVerbose("Initializing DocFx project.");
             Assembly assembly = typeof(DocumentationBuilder).Assembly;
             var resourceManager = new ResourceManager(assembly, "Templates");
-            resourceManager.ExportResources("project", _buildPath);
+            string resourceName = GeneratePdf ? "project-pdf" : "project";
+            resourceManager.ExportResources(resourceName, _buildPath);
         }
     }
 }

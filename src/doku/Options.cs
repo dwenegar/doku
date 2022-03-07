@@ -22,6 +22,9 @@ namespace Dwenegar.Doku
         [Option("with-docfx", HelpText = "Which DocFx installation to use")]
         public string? DocFxPath { get; set; }
 
+        [Option("pdf", Default = false, HelpText = "Generates a pdf files of the documentation")]
+        public bool GeneratePdf { get; set; }
+
         [Option("keep-build-folder", Default = false, HelpText = "Keeps the build folder (useful for debugging)")]
         public bool KeepBuildFolder { get; set; }
 

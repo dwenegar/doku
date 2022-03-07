@@ -50,6 +50,7 @@ namespace Dwenegar.Doku
         }
 
         public string? DocFxPath { get; init; }
+        public bool GeneratePdf { get; set; }
         public bool KeepBuildFolder { get; init; }
         public string? TemplatePath { get; init; }
         public string? StyleSheetPath { get; init; }
@@ -60,6 +61,7 @@ namespace Dwenegar.Doku
 
             Logger.LogVerbose($"OutputPath: {_outputPath}");
             Logger.LogVerbose($"PackagePath: {_packagePath}");
+            Logger.LogVerbose($"Generate Pdf: {GeneratePdf}");
             Logger.Log(KeepBuildFolder ? LogLevel.Info : LogLevel.Verbose, $"BuildPath: {_buildPath}");
 
             try

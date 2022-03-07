@@ -19,7 +19,8 @@
       "filter": "filter.yml"
     }
   ],
-  "build": {
+  "pdf": {
+    "noStdin": true,
     "content": [
       {
         "files": [
@@ -40,8 +41,11 @@
         ],
         "exclude": [
           "obj/**",
-          "_site/**"
+          "_site_pdf/**"
         ]
+      },
+      {
+        "files": "pdf/toc.yml"
       }
     ],
     "resource": [
@@ -55,8 +59,11 @@
         ],
         "exclude": [
           "obj/**",
-          "_site/**"
+          "_site_pdf/**"
         ]
+      },
+      {
+        "files": "pdf/toc.yml"
       }
     ],
     "overwrite": [
@@ -66,28 +73,18 @@
         ],
         "exclude": [
           "obj/**",
-          "_site/**"
+          "_site_pdf/**"
         ]
       }
     ],
-    "dest": "_site",
-    "globalMetadataFiles": [
-      "globalMetadata.json"
-    ],
-    "fileMetadataFiles": [
-      "fileMetadata.json"
-    ],
-    "template": [
-      $TEMPLATE
-    ],
-    "postProcessors": [],
+    "dest": "_site_pdf",
     "markdownEngineName": "markdig",
     "noLangKeyword": false,
     "keepFileLink": false,
     "cleanupCacheHistory": false,
     "disableGitFeatures": false,
-    "xrefService": [
-      "https://xref.docs.microsoft.com/query?uid={uid}"
-    ]
+    "wkhtmltopdf": {
+      "additionalArguments": "--enable-local-file-access"
+    }
   }
 }

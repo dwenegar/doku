@@ -23,6 +23,7 @@ namespace Dwenegar.Doku
 
             DocumentationBuilder builder = new(options.PackagePath, options.SourcePath, options.OutputPath, options.BuildPath)
             {
+                GeneratePdf = options.GeneratePdf,
                 DocFxPath = options.DocFxPath,
                 TemplatePath = options.TemplatePath,
                 StyleSheetPath = options.StyleSheetPath,
