@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
+    <PackageReference Include="CommandLineParser" Version="2.9.0-preview1"/>
   </ItemGroup>
 
   <PropertyGroup>
@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Doku.Lib\Doku.Lib.csproj" />
+    <ProjectReference Include="..\Doku.Lib\Doku.Lib.csproj"/>
   </ItemGroup>
 
 </Project>
