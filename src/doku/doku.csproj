@@ -8,10 +8,6 @@
     <RootNamespace>Dwenegar.Doku</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.0-preview1"/>
-  </ItemGroup>
-
   <PropertyGroup>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Livieri Simone</Authors>
@@ -30,6 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.0-preview1"/>
     <PackageReference Include="Packaging.Targets" Version="0.1.220">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile;build</IncludeAssets>
@@ -38,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Doku.Lib\Doku.Lib.csproj"/>
+    <EmbeddedResource Include="Templates\*.zip"/>
   </ItemGroup>
 
 </Project>

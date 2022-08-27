@@ -22,26 +22,21 @@ jobs:
           }
 
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Install .NET 6.0
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'
 
-      - name: Update Templates
-        run: .\src\update-templates.ps1
-
       - name: Build Doku
+        if: ${{ !env.DOKU_PUBLISH }}
         run: dotnet build src\Doku -c Release
 
-      - name: Build Doku.Releaser
-        run: dotnet build src\Doku.Releaser -c Release
-
-      - name: Build Packages
-        if: ${{ !env.DOKU_PUBLISH }}
-        run: .\src\Doku.Releaser\bin\Release\net6.0\Doku.Releaser.exe --build-only
-
       - name: Build Packages and Publish
-        if: env.DOKU_PUBLISH
-        run: .\src\Doku.Releaser\bin\Release\net6.0\Doku.Releaser.exe --token ${{secrets.RELEASER_REPO_TOKEN}} --repository $env:GITHUB_REPOSITORY
+        if: ${{ env.DOKU_PUBLISH }}
+        run: |
+          dotnet tool install -g dotnet-releaser
+          dotnet-releaser run --github-token ${{secrets.RELEASER_REPO_TOKEN}} src/dotnet-releaser.toml

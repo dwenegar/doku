@@ -1,0 +1,28 @@
+profile = "custom"
+
+# configuration file for dotnet-releaser
+[msbuild]
+project = "doku.sln"
+
+[github]
+user = "dwenegar"
+repo = "doku"
+
+[changelog]
+publish = false
+
+# Create zip files only for Windows platforms
+[[pack]]
+rid = ["win-x64"]
+kinds = ["zip"]
+
+# Default targets for Linux/Ubuntu Debian compatible distro with debian and tar packages
+[[pack]]
+rid = ["linux-x64"]
+kinds = ["deb", "tar"]
+
+# Default targets for macOS, only tar files for this platform
+[[pack]]
+rid = ["osx-x64", "osx-arm64"]
+kinds = ["tar"]
+

@@ -4,7 +4,7 @@ Push-Location $PSScriptRoot
 
 $TemplateRoot = "$PSScriptRoot/Doku.Templates/project"
 $PdfTemplateRoot = "$PSScriptRoot/Doku.Templates/project-pdf"
-$DestinationDir = "$PSScriptRoot/Doku.Lib/Templates"
+$DestinationDir = "$PSScriptRoot/Doku/Templates"
 
 if (!(Test-Path -Path $DestinationDir))
 {
