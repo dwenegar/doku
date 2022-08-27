@@ -5,10 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using Dwenegar.Doku.Logging;
-using Dwenegar.Doku.Utils;
+using Doku.Logging;
+using Doku.Utils;
 
-namespace Dwenegar.Doku
+namespace Doku
 {
     internal delegate void DocumentationBuildCompletedHandler();
 
@@ -50,7 +50,7 @@ namespace Dwenegar.Doku
         }
 
         public string? DocFxPath { get; init; }
-        public bool GeneratePdf { get; set; }
+        public bool GeneratePdf { get; init; }
         public bool KeepBuildFolder { get; init; }
         public string? TemplatePath { get; init; }
         public string? StyleSheetPath { get; init; }

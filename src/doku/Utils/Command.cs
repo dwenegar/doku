@@ -7,7 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-namespace Dwenegar.Doku.Utils
+namespace Doku.Utils
 {
     public sealed class CommandInfo
     {

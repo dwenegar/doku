@@ -3,9 +3,9 @@
 using System;
 using CommandLine;
 using CommandLine.Text;
-using Dwenegar.Doku.Logging;
+using Doku.Logging;
 
-namespace Dwenegar.Doku
+namespace Doku
 {
     internal static class Program
     {

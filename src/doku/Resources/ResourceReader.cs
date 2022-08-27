@@ -6,7 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
-namespace Dwenegar.Doku.Resources
+namespace Doku.Resources
 {
     internal sealed class ResourceReader : IDisposable
     {

@@ -5,11 +5,11 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using Dwenegar.Doku.Logging;
-using Dwenegar.Doku.Resources;
-using Dwenegar.Doku.Utils;
+using Doku.Logging;
+using Doku.Resources;
+using Doku.Utils;
 
-namespace Dwenegar.Doku
+namespace Doku
 {
     public sealed partial class DocumentationBuilder
     {

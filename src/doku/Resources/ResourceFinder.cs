@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Dwenegar.Doku.Resources
+namespace Doku.Resources
 {
     internal sealed class ResourceFinder
     {
@@ -16,7 +16,7 @@ namespace Dwenegar.Doku.Resources
         public ResourceFinder(Assembly assembly, string rootNamespace)
         {
             _assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
-            _resourcePrefix = $"Dwenegar.Doku.{rootNamespace}.";
+            _resourcePrefix = $"Doku.{rootNamespace}.";
             _manifestResourceNames = assembly.GetManifestResourceNames();
         }
 

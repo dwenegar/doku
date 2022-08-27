@@ -3,10 +3,10 @@
 using System;
 using System.IO;
 using System.Reflection;
-using Dwenegar.Doku.Logging;
-using Dwenegar.Doku.Utils;
+using Doku.Logging;
+using Doku.Utils;
 
-namespace Dwenegar.Doku.Resources
+namespace Doku.Resources
 {
     internal sealed class ResourceManager
     {

@@ -1,9 +1,9 @@
 // Copyright (c) Simone Livieri. For terms of use, see LICENSE.txt
 
-using Dwenegar.Doku.Logging;
-using Dwenegar.Doku.Utils;
+using Doku.Logging;
+using Doku.Utils;
 
-namespace Dwenegar.Doku
+namespace Doku
 {
     public sealed partial class DocumentationBuilder
     {

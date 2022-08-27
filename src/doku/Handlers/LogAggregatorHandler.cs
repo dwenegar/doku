@@ -2,9 +2,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Dwenegar.Doku.Logging.Handlers;
+using Doku.Logging.Handlers;
 
-namespace Dwenegar.Doku.Logging
+namespace Doku.Logging
 {
     internal sealed class LogAggregatorHandler : LogHandlerBase
     {

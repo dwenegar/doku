@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Simone Livieri. For terms of use, see LICENSE.txt
 
 using CommandLine;
-using Dwenegar.Doku.Logging;
+using Doku.Logging;
 
-namespace Dwenegar.Doku
+namespace Doku
 {
     internal sealed class Options
     {

@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Dwenegar.Doku.Utils
+namespace Doku.Utils
 {
     internal static class TocHelper
     {

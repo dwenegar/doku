@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Dwenegar.Doku.Logging
+namespace Doku.Logging
 {
     internal static class ConsoleUtils
     {

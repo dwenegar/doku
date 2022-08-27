@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Dwenegar.Doku
+namespace Doku
 {
     [JsonSerializable(typeof(TemplateInfo))]
     [JsonSerializable(typeof(DocumentationBuilder.ProjectConfig))]

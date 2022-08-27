@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Dwenegar.Doku.Logging.Handlers;
+using Doku.Logging.Handlers;
 
-namespace Dwenegar.Doku.Logging
+namespace Doku.Logging
 {
     public sealed class Logger
     {

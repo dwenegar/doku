@@ -3,9 +3,9 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using Dwenegar.Doku.Logging;
+using Doku.Logging;
 
-namespace Dwenegar.Doku.Utils
+namespace Doku.Utils
 {
     public static class Files
     {

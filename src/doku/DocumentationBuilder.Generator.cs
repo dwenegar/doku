@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Dwenegar.Doku.Logging;
-using Dwenegar.Doku.Utils;
+using Doku.Logging;
+using Doku.Utils;
 
-namespace Dwenegar.Doku
+namespace Doku
 {
     public sealed partial class DocumentationBuilder
     {
@@ -95,7 +95,7 @@ namespace Dwenegar.Doku
             var toc = new StringBuilder();
             if (_manualHomePage != null)
             {
-                toc.AppendLine("- name: Manual") //
+                toc.AppendLine("- name: Manual")  //
                    .AppendLine("  href: manual/") //
                    .Append("  homepage: ")
                    .AppendLine(_manualHomePage);
@@ -104,7 +104,7 @@ namespace Dwenegar.Doku
             if (_hasApiDocs)
             {
                 toc.AppendLine("- name: API Documentation") //
-                   .AppendLine("  href: api/") //
+                   .AppendLine("  href: api/")              //
                    .AppendLine("  homepage: api/index.md");
             }
 

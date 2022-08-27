@@ -3,7 +3,7 @@
 using System.IO;
 using System.Text;
 
-namespace Dwenegar.Doku.Logging.Handlers
+namespace Doku.Logging.Handlers
 {
     internal sealed class FileLogHandler : LogHandlerBase
     {

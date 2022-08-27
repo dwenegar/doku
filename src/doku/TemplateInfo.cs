@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Dwenegar.Doku
+namespace Doku
 {
     internal enum TemplateType
     {
