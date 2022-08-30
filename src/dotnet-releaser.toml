@@ -8,7 +8,7 @@ project = "doku.sln"
 user = "dwenegar"
 repo = "doku"
 
-[changelog]
+[nuget]
 publish = false
 
 # Create zip files only for Windows platforms
