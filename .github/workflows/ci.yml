@@ -37,6 +37,7 @@ jobs:
 
       - name: Build Packages and Publish
         if: ${{ env.DOKU_PUBLISH }}
+        shell: bash
         run: |
           dotnet tool install -g dotnet-releaser
           dotnet-releaser run --github-token ${{secrets.RELEASER_REPO_TOKEN}} src/dotnet-releaser.toml

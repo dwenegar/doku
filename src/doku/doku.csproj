@@ -11,14 +11,14 @@
   <PropertyGroup>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Livieri Simone</Authors>
-    <Copyright>Copyright (c) 2021-2022 Simone Livieri. All rights reserved.</Copyright>
-    <Version Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</Version>
-    <Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
+    <Description>Doku is a command line tool to generate documentation for custom Unity packages.</Description>
+    <Copyright>Simone Livieri</Copyright>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>doku</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <PackageId>doku</PackageId>
     <PackageTags>unity;documentation;tool</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>https://github.com/dwenegar/doku/blob/CHANGELOG.md</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/dwenegar/doku</PackageProjectUrl>
     <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
@@ -26,16 +26,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1"/>
-    <PackageReference Include="Packaging.Targets" Version="0.1.220">
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="MinVer" Version="4.2.0">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile;build</IncludeAssets>
-      <ExcludeAssets>runtime;contentFiles;native</ExcludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Templates\*.zip"/>
+    <EmbeddedResource Include="Templates\*.zip" />
   </ItemGroup>
 
 </Project>

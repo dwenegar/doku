@@ -8,14 +8,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{29174C70-8F14-452F-BC71-CA7D32D56A10}"
 	ProjectSection(SolutionItems) = preProject
 		update-templates.ps1 = update-templates.ps1
-		Directory.Build.props = Directory.Build.props
 		global.json = global.json
 		..\.editorconfig = ..\.editorconfig
 		..\.gitignore = ..\.gitignore
 		..\README.md = ..\README.md
 		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
 		..\CHANGELOG.md = ..\CHANGELOG.md
-		Version.props = Version.props
 		..\LICENSE.txt = ..\LICENSE.txt
 		dotnet-releaser.toml = dotnet-releaser.toml
 	EndProjectSection
