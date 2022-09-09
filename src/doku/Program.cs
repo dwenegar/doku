@@ -1,6 +1,7 @@
 // Copyright (c) Simone Livieri. For terms of use, see LICENSE.txt
 
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Doku.Logging;
@@ -11,6 +12,8 @@ namespace Doku;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Local
+
+[VersionOptionFromMember("-V|--version", MemberName = nameof(Version))]
 internal sealed class Program
 {
     [Option("-o|--output", Description = "The output folder.")]
@@ -43,6 +46,17 @@ internal sealed class Program
     [DirectoryExists]
     [Argument(0, "packagePath", Description = "Path to the folder containing the package.json file.")]
     private string PackagePath { get; set; } = Directory.GetCurrentDirectory();
+
+    private string Version
+    {
+        get
+        {
+            Assembly assembly = GetType().Assembly;
+            string version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "?.?";
+            string appName = assembly.GetName().Name ?? "?";
+            return $"{appName} {version}";
+        }
+    }
 
     private static async Task<int> Main(string[] args) => await CommandLineApplication.ExecuteAsync<Program>(args);
 
