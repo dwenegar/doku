@@ -9,124 +9,123 @@ using Doku.Logging;
 using Doku.Resources;
 using Doku.Utils;
 
-namespace Doku
+namespace Doku;
+
+public sealed partial class DocumentationBuilder
 {
-    public sealed partial class DocumentationBuilder
+    private void LoadPackageInfo()
     {
-        private void LoadPackageInfo()
+        Logger.LogVerbose("Loading package.json");
+
+        string packageJsonPath = Path.Combine(_packagePath, "package.json");
+        try
         {
-            Logger.LogVerbose("Loading package.json");
-
-            string packageJsonPath = Path.Combine(_packagePath, "package.json");
-            try
+            string packageJsonText = File.ReadAllText(packageJsonPath);
+            _packageInfo = JsonSerializer.Deserialize(packageJsonText, SerializerContext.Default.PackageInfo);
+            if (_packageInfo == null)
             {
-                string packageJsonText = File.ReadAllText(packageJsonPath);
-                _packageInfo = JsonSerializer.Deserialize(packageJsonText, SerializerContext.Default.PackageInfo);
-                if (_packageInfo == null)
-                {
-                    throw new Exception("Invalid package.json.");
-                }
+                throw new Exception("Invalid package.json.");
+            }
 
-                Logger.LogVerbose($"  Package DisplayName: {_packageInfo.DisplayName}");
-                Logger.LogVerbose($"  Package Version: {_packageInfo.Version}");
-            }
-            catch (FileNotFoundException)
-            {
-                throw new Exception($"File {packageJsonPath} does not exist.");
-            }
+            Logger.LogVerbose($"  Package DisplayName: {_packageInfo.DisplayName}");
+            Logger.LogVerbose($"  Package Version: {_packageInfo.Version}");
+        }
+        catch (FileNotFoundException)
+        {
+            throw new Exception($"File {packageJsonPath} does not exist.");
+        }
+    }
+
+    private void LoadProjectConfig()
+    {
+        if (_packageManualPath == null)
+        {
+            return;
         }
 
-        private void LoadProjectConfig()
+        Logger.LogVerbose("Loading config.json.");
+
+        string path = Path.Combine(_packageManualPath, "config.json");
+        if (File.Exists(path))
         {
-            if (_packageManualPath == null)
+            string json = File.ReadAllText(path);
+            ProjectConfig? projectConfig = JsonSerializer.Deserialize(json, SerializerContext.Default.ProjectConfig);
+            if (projectConfig != null)
             {
-                return;
-            }
-
-            Logger.LogVerbose("Loading config.json.");
-
-            string path = Path.Combine(_packageManualPath, "config.json");
-            if (File.Exists(path))
-            {
-                string json = File.ReadAllText(path);
-                ProjectConfig? projectConfig = JsonSerializer.Deserialize(json, SerializerContext.Default.ProjectConfig);
-                if (projectConfig != null)
-                {
-                    _projectConfig = projectConfig;
-                    Logger.LogVerbose($"  ProjectConfig: {projectConfig}");
-                }
+                _projectConfig = projectConfig;
+                Logger.LogVerbose($"  ProjectConfig: {projectConfig}");
             }
         }
+    }
 
-        private bool TryCopyStyle()
+    private bool TryCopyStyle()
+    {
+        string? stylesheetPath = null;
+        if (StyleSheetPath != null)
         {
-            string? stylesheetPath = null;
-            if (StyleSheetPath != null)
-            {
-                stylesheetPath = Path.GetFullPath(StyleSheetPath);
-            }
-            else if (_packageManualPath != null)
-            {
-                stylesheetPath = Path.Combine(_packageManualPath, "style.css");
-            }
+            stylesheetPath = Path.GetFullPath(StyleSheetPath);
+        }
+        else if (_packageManualPath != null)
+        {
+            stylesheetPath = Path.Combine(_packageManualPath, "style.css");
+        }
 
-            if (stylesheetPath != null)
-            {
-                Logger.LogVerbose("Copying custom stylesheet.");
-                string dst = Path.Combine(_buildPath, TemplateFolder, "styles/main.css");
-                return Files.TryCopyFile(stylesheetPath, dst);
-            }
+        if (stylesheetPath != null)
+        {
+            Logger.LogVerbose("Copying custom stylesheet.");
+            string dst = Path.Combine(_buildPath, TemplateFolder, "styles/main.css");
+            return Files.TryCopyFile(stylesheetPath, dst);
+        }
 
+        return false;
+    }
+
+    private bool TryLoadTemplateInfo(out TemplateInfo? templateInfo)
+    {
+        templateInfo = null;
+        if (TemplatePath == null)
+        {
             return false;
         }
 
-        private bool TryLoadTemplateInfo(out TemplateInfo? templateInfo)
+        Logger.LogVerbose("Loading template.json");
+
+        string templatePath = Path.GetFullPath(TemplatePath);
+        if (!Directory.Exists(templatePath))
         {
-            templateInfo = null;
-            if (TemplatePath == null)
-            {
-                return false;
-            }
-
-            Logger.LogVerbose("Loading template.json");
-
-            string templatePath = Path.GetFullPath(TemplatePath);
-            if (!Directory.Exists(templatePath))
-            {
-                throw new Exception($"{TemplatePath} does not exists.");
-            }
-
-            string path = Path.Combine(templatePath, "template.json");
-            string json = File.ReadAllText(path, Encoding.UTF8);
-            templateInfo = JsonSerializer.Deserialize(json, SerializerContext.Default.TemplateInfo);
-            if (templateInfo == null)
-            {
-                throw new Exception($"Failed to load {path}.");
-            }
-
-            return true;
+            throw new Exception($"{TemplatePath} does not exists.");
         }
 
-        private void LocatePackageManualFolder()
+        string path = Path.Combine(templatePath, "template.json");
+        string json = File.ReadAllText(path, Encoding.UTF8);
+        templateInfo = JsonSerializer.Deserialize(json, SerializerContext.Default.TemplateInfo);
+        if (templateInfo == null)
         {
-            Logger.LogVerbose("Locating manual folder.");
-
-            string path = Path.Combine(_packagePath, "Documentation~");
-            if (Directory.Exists(path))
-            {
-                _packageManualPath = path;
-                Logger.LogVerbose($"  Package Manual Path: {_packageManualPath}");
-            }
+            throw new Exception($"Failed to load {path}.");
         }
 
-        private void ExtractDocFxProject()
-        {
-            using Logger.Scope scope = new("InitializeDocFxProject");
+        return true;
+    }
 
-            Logger.LogVerbose("Initializing DocFx project.");
-            Assembly assembly = typeof(DocumentationBuilder).Assembly;
-            var resourceManager = new ResourceManager(assembly, "Templates");
-            resourceManager.ExportResources("project", _buildPath);
+    private void LocatePackageManualFolder()
+    {
+        Logger.LogVerbose("Locating manual folder.");
+
+        string path = Path.Combine(_packagePath, "Documentation~");
+        if (Directory.Exists(path))
+        {
+            _packageManualPath = path;
+            Logger.LogVerbose($"  Package Manual Path: {_packageManualPath}");
         }
+    }
+
+    private void ExtractDocFxProject()
+    {
+        using Logger.Scope scope = new("InitializeDocFxProject");
+
+        Logger.LogVerbose("Initializing DocFx project.");
+        Assembly assembly = typeof(DocumentationBuilder).Assembly;
+        var resourceManager = new ResourceManager(assembly, "Templates");
+        resourceManager.ExportResources("project", _buildPath);
     }
 }
