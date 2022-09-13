@@ -13,9 +13,6 @@ namespace Doku;
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Local
 internal sealed class Program
 {
-    [Option("-S|--source", Description = "Path to the documentation source")]
-    private string SourcePath { get; set; } = "Documentation~";
-
     [Option("-o|--output", Description = "The output folder.")]
     private string OutputPath { get; set; } = "docs";
 
@@ -57,7 +54,7 @@ internal sealed class Program
     {
         Logger.Initialize(LogLevel, LogFilePath);
 
-        DocumentationBuilder builder = new(PackagePath, SourcePath, OutputPath, BuildPath)
+        DocumentationBuilder builder = new(PackagePath, OutputPath, BuildPath)
         {
             GeneratePdf = GeneratePdf,
             DocFxPath = DocFxPath,

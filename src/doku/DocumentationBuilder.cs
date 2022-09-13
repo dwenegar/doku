@@ -18,7 +18,6 @@ namespace Doku
         private const string PackageDocsGenerationDefine = "PACKAGE_DOCS_GENERATION";
 
         private readonly string _packagePath;
-        private readonly string _sourcePath;
         private readonly string _outputPath;
 
         private readonly string _buildPath;
@@ -36,10 +35,9 @@ namespace Doku
         private string? _packageManualPath;
         private DocFx? _docFx;
 
-        public DocumentationBuilder(string packagePath, string sourcePath, string outputPath, string? buildPath)
+        public DocumentationBuilder(string packagePath, string outputPath, string? buildPath)
         {
             _packagePath = Path.GetFullPath(packagePath);
-            _sourcePath = sourcePath;
             _outputPath = Path.GetFullPath(outputPath);
             _buildPath = buildPath == null
                 ? Path.Combine(Path.GetTempPath(), $"dg-{Path.GetRandomFileName()}")

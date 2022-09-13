@@ -111,7 +111,7 @@ namespace Doku
         {
             Logger.LogVerbose("Locating manual folder.");
 
-            string path = Path.Combine(_packagePath, _sourcePath);
+            string path = Path.Combine(_packagePath, "Documentation~");
             if (Directory.Exists(path))
             {
                 _packageManualPath = path;
