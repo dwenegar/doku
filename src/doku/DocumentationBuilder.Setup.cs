@@ -126,8 +126,7 @@ namespace Doku
             Logger.LogVerbose("Initializing DocFx project.");
             Assembly assembly = typeof(DocumentationBuilder).Assembly;
             var resourceManager = new ResourceManager(assembly, "Templates");
-            string resourceName = GeneratePdf ? "project-pdf" : "project";
-            resourceManager.ExportResources(resourceName, _buildPath);
+            resourceManager.ExportResources("project", _buildPath);
         }
     }
 }

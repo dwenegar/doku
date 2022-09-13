@@ -28,9 +28,6 @@ internal sealed class Program
     [Option("--with-docfx", Description = "The folder of the DocFx installation to use.")]
     private string? DocFxPath { get; set; }
 
-    [Option("--pdf", Description = "Generate a pdf files of the documentation.")]
-    private bool GeneratePdf { get; set; }
-
     [Option("--keep-build-folder", Description = "Keep the build folder.")]
     private bool KeepBuildFolder { get; set; }
 
@@ -56,7 +53,6 @@ internal sealed class Program
 
         DocumentationBuilder builder = new(PackagePath, OutputPath, BuildPath)
         {
-            GeneratePdf = GeneratePdf,
             DocFxPath = DocFxPath,
             TemplatePath = TemplatePath,
             StyleSheetPath = StyleSheetPath,
