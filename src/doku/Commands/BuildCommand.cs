@@ -43,9 +43,9 @@ internal sealed class BuildCommand : CommandBase
     [UsedImplicitly]
     protected override Task<int> OnExecuteAsync(CommandLineApplication app)
     {
-        Logger.Initialize(LogLevel, LogFilePath);
+        Logger logger = InitializeLogging();
 
-        DocumentationBuilder builder = new(PackagePath, OutputPath, BuildPath)
+        DocumentationBuilder builder = new(PackagePath, OutputPath, BuildPath, logger)
         {
             DocFxPath = DocFxPath,
             TemplatePath = TemplatePath,
@@ -54,7 +54,6 @@ internal sealed class BuildCommand : CommandBase
         };
 
         builder.Build();
-        Logger.Shutdown();
         return Task.FromResult(0);
     }
 }

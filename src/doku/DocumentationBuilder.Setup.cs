@@ -5,17 +5,16 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using Doku.Logging;
 using Doku.Resources;
 using Doku.Utils;
 
 namespace Doku;
 
-public sealed partial class DocumentationBuilder
+internal sealed partial class DocumentationBuilder
 {
     private void LoadPackageInfo()
     {
-        Logger.LogVerbose("Loading package.json");
+        Verbose("Loading package.json");
 
         string packageJsonPath = Path.Combine(_packagePath, "package.json");
         try
@@ -27,8 +26,8 @@ public sealed partial class DocumentationBuilder
                 throw new Exception("Invalid package.json.");
             }
 
-            Logger.LogVerbose($"  Package DisplayName: {_packageInfo.DisplayName}");
-            Logger.LogVerbose($"  Package Version: {_packageInfo.Version}");
+            Verbose($"  Package DisplayName: {_packageInfo.DisplayName}");
+            Verbose($"  Package Version: {_packageInfo.Version}");
         }
         catch (FileNotFoundException)
         {
@@ -43,7 +42,7 @@ public sealed partial class DocumentationBuilder
             return;
         }
 
-        Logger.LogVerbose("Loading config.json.");
+        Verbose("Loading config.json.");
 
         string path = Path.Combine(_packageManualPath, "config.json");
         if (File.Exists(path))
@@ -53,7 +52,7 @@ public sealed partial class DocumentationBuilder
             if (projectConfig != null)
             {
                 _projectConfig = projectConfig;
-                Logger.LogVerbose($"  ProjectConfig: {projectConfig}");
+                Verbose($"  ProjectConfig: {projectConfig}");
             }
         }
     }
@@ -72,7 +71,7 @@ public sealed partial class DocumentationBuilder
 
         if (stylesheetPath != null)
         {
-            Logger.LogVerbose("Copying custom stylesheet.");
+            Verbose("Copying custom stylesheet.");
             string dst = Path.Combine(_buildPath, TemplateFolder, "styles/main.css");
             return Files.TryCopyFile(stylesheetPath, dst);
         }
@@ -88,7 +87,7 @@ public sealed partial class DocumentationBuilder
             return false;
         }
 
-        Logger.LogVerbose("Loading template.json");
+        Verbose("Loading template.json");
 
         string templatePath = Path.GetFullPath(TemplatePath);
         if (!Directory.Exists(templatePath))
@@ -109,23 +108,21 @@ public sealed partial class DocumentationBuilder
 
     private void LocatePackageManualFolder()
     {
-        Logger.LogVerbose("Locating manual folder.");
+        Verbose("Locating manual folder.");
 
         string path = Path.Combine(_packagePath, "Documentation~");
         if (Directory.Exists(path))
         {
             _packageManualPath = path;
-            Logger.LogVerbose($"  Package Manual Path: {_packageManualPath}");
+            Verbose($"  Package Manual Path: {_packageManualPath}");
         }
     }
 
     private void ExtractDocFxProject()
     {
-        using Logger.Scope scope = new("InitializeDocFxProject");
-
-        Logger.LogVerbose("Initializing DocFx project.");
+        Verbose("Initializing DocFx project.");
         Assembly assembly = typeof(DocumentationBuilder).Assembly;
-        var resourceManager = new ResourceManager(assembly, "Templates");
+        var resourceManager = new ResourceManager(assembly, "Templates", _logger);
         resourceManager.ExportResources("project", _buildPath);
     }
 }

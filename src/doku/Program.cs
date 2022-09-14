@@ -1,9 +1,9 @@
 // Copyright (c) Simone Livieri. For terms of use, see LICENSE.txt
 
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Threading.Tasks;
 using Doku.Commands;
+using Doku.Utils;
 using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
 
@@ -16,17 +16,7 @@ namespace Doku;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 internal sealed class Program
 {
-    private string Version
-    {
-        get
-        {
-            Assembly assembly = GetType().Assembly;
-            string version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-                             ?? "?.?";
-            string appName = assembly.GetName().Name ?? "?";
-            return $"{appName} {version}";
-        }
-    }
+    private string Version => AssemblyHelpers.GetInformationalVersion();
 
     private static async Task<int> Main(string[] args) => await CommandLineApplication.ExecuteAsync<Program>(args);
 

@@ -2,19 +2,57 @@
 // Unauthorized copying of this file, via any medium is strictly prohibited.
 // For terms of use, see LICENSE.txt
 
+using System;
 using System.Threading.Tasks;
 using Doku.Logging;
+using Doku.Utils;
+using Lunet.Extensions.Logging.SpectreConsole;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
+
+// ReSharper disable ReplaceAutoPropertyWithComputedProperty
 
 namespace Doku.Commands;
 
 internal abstract class CommandBase
 {
     [Option("--log-level", Description = "The level at which to log the tool operations.")]
-    protected LogLevel LogLevel { get; set; } = LogLevel.Info;
-
-    [Option("--log", Description = "The path to save the log to.")]
-    protected string? LogFilePath { get; set; }
+    protected LogLevel LogLevel { get; } = LogLevel.Information;
 
     protected abstract Task<int> OnExecuteAsync(CommandLineApplication app);
+
+    protected Logger InitializeLogging()
+    {
+        using ILoggerFactory? factory = LoggerFactory.Create(builder =>
+        {
+            bool isRunningOnGitHubAction = GitHubActionHelpers.IsRunningOnGitHubAction;
+            IAnsiConsoleOutput consoleOutput = new AnsiConsoleOutput(Console.Out);
+            if (isRunningOnGitHubAction)
+            {
+                consoleOutput = new AnsiConsoleOutputOverride(consoleOutput)
+                {
+                    Width = 256,
+                    Height = 128
+                };
+            }
+
+            builder.SetMinimumLevel(LogLevel)
+                   .AddSpectreConsole(new SpectreConsoleLoggerOptions
+                   {
+                       ConsoleSettings = new AnsiConsoleSettings
+                       {
+                           Ansi = isRunningOnGitHubAction ? AnsiSupport.No : default,
+                           Out = consoleOutput
+                       },
+                       IndentAfterNewLine = false,
+                       IncludeTimestamp = true,
+                       IncludeNewLineBeforeMessage = false,
+                       IncludeCategory = true
+                   });
+        });
+
+        ILogger logger = factory.CreateLogger(AssemblyHelpers.GetAssemblyName());
+        return new Logger(logger, LogLevel);
+    }
 }

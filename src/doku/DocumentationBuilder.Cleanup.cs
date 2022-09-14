@@ -1,29 +1,23 @@
 // Copyright (c) Simone Livieri. For terms of use, see LICENSE.txt
 
-using Doku.Logging;
 using Doku.Utils;
 
-namespace Doku
+namespace Doku;
+
+internal sealed partial class DocumentationBuilder
 {
-    public sealed partial class DocumentationBuilder
+    private void DeleteFolders()
     {
-        private void DeleteFolders()
-        {
-            using Logger.Scope scope = new("DeleteFolders");
+        Verbose($"Deleting `{_outputPath}`");
+        Files.DeleteDirectory(_outputPath);
 
-            Logger.LogVerbose($"Deleting `{_outputPath}`");
-            Files.DeleteDirectory(_outputPath);
+        Verbose($"Deleting `{_buildPath}`");
+        Files.DeleteDirectory(_buildPath);
+    }
 
-            Logger.LogVerbose($"Deleting `{_buildPath}`");
-            Files.DeleteDirectory(_buildPath);
-        }
-
-        private void DeleteBuildFolder()
-        {
-            using Logger.Scope scope = new("DeleteBuildFolder");
-
-            Logger.LogVerbose($"Deleting `{_buildPath}`");
-            Files.DeleteDirectory(_buildPath);
-        }
+    private void DeleteBuildFolder()
+    {
+        Verbose($"Deleting `{_buildPath}`");
+        Files.DeleteDirectory(_buildPath);
     }
 }

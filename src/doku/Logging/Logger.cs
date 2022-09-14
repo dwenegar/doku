@@ -1,108 +1,78 @@
-﻿// Copyright (c) Simone Livieri. For terms of use, see LICENSE.txt
+﻿// Copyright Simone Livieri. All Rights Reserved.
+// Unauthorized copying of this file, via any medium is strictly prohibited.
+// For terms of use, see LICENSE.txt
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Doku.Logging.Handlers;
+using System.Threading;
+using Doku.Utils;
+using Lunet.Extensions.Logging.SpectreConsole;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
-namespace Doku.Logging
+namespace Doku.Logging;
+
+internal sealed class Logger
 {
-    public sealed class Logger
+    private readonly ILogger _logger;
+    private readonly bool _runningFromGitHubAction;
+    private int _logId;
+
+    public Logger(ILogger logger, LogLevel level)
     {
-        private static readonly Logger s_instance = new();
+        _logger = logger;
+        Level = level;
+        _runningFromGitHubAction = GitHubActionHelpers.IsRunningOnGitHubAction;
+    }
 
-        private LogLevel _level;
+    public LogLevel Level { get; }
 
-        private ILogHandler[] _handlers = null!;
+    public bool HasErrors { get; private set; }
 
-        private string? _scope;
+    public IDisposable BeginGroup(string name) => new Scope(name, _runningFromGitHubAction);
 
-        private Logger() => DoInitialize(LogLevel.Info, null);
-
-        public static LogLevel Level => s_instance._level;
-
-        public static void Initialize(LogLevel level, string? logFilePath) => s_instance.DoInitialize(level, logFilePath);
-
-        public static void Shutdown() => s_instance.CloseHandlers();
-
-        public static void LogVerbose(string message) => s_instance.DoLog(LogLevel.Verbose, message);
-
-        public static void LogInfo(string message) => s_instance.DoLog(LogLevel.Info, message);
-
-        public static void LogWarning(string message) => s_instance.DoLog(LogLevel.Warning, message);
-
-        public static void LogError(string message) => s_instance.DoLog(LogLevel.Error, message);
-
-        public static void LogVerbose(Exception exception) => s_instance.DoLog(LogLevel.Verbose, exception.ToString());
-
-        public static void LogInfo(Exception exception) => s_instance.DoLog(LogLevel.Info, exception.ToString());
-
-        public static void LogWarning(Exception exception) => s_instance.DoLog(LogLevel.Warning, exception.ToString());
-
-        public static void LogError(Exception exception) => s_instance.DoLog(LogLevel.Error, exception.ToString());
-
-        public static void Log(LogLevel level, string message) => s_instance.DoLog(level, message);
-
-        private void DoInitialize(LogLevel level, string? logFilePath)
+    public void Log(LogLevel level, Exception? exception, string? message, bool markup, params object?[] args)
+    {
+        if (level == LogLevel.Error)
         {
-            var handlers = new List<ILogHandler>
-            {
-                new ConsoleLogHandler(),
-                new LogAggregatorHandler(LogLevel.Warning)
-            };
-
-            if (logFilePath != null)
-            {
-                handlers.Add(new FileLogHandler(logFilePath));
-            }
-
-            _level = level;
-            _handlers = handlers.ToArray();
+            HasErrors = true;
         }
 
-        private void CloseHandlers()
+        int id = Interlocked.Increment(ref _logId);
+        if (markup)
         {
-            foreach (ILogHandler handler in _handlers)
+            _logger.LogMarkup(level, new EventId(id), exception, message, args);
+        }
+        else
+        {
+            _logger.Log(level, new EventId(id), exception, message, args);
+        }
+    }
+
+    private sealed class Scope : IDisposable
+    {
+        private readonly bool _isRunningFromGitHubAction;
+
+        public Scope(string name, bool isRunningFromGitHubAction)
+        {
+            _isRunningFromGitHubAction = isRunningFromGitHubAction;
+            if (isRunningFromGitHubAction)
             {
-                handler.Close();
+                AnsiConsole.WriteLine($"::group::{name}");
             }
+
+            AnsiConsole.Write(new Rule(name) { Alignment = Justify.Left });
+            Console.Out.Flush();
         }
 
-        private bool CanLog(LogLevel level)
-            => _level != LogLevel.None && level >= _level;
-
-        private void DoLog(LogLevel level, string message)
+        public void Dispose()
         {
-            if (CanLog(level))
+            AnsiConsole.WriteLine();
+            if (_isRunningFromGitHubAction)
             {
-                DateTime date = DateTime.Now;
-                var logRecord = new LogRecord(date, _scope, level, message);
-                for (int i = _handlers.Length; --i >= 0;)
-                {
-                    _handlers[i].Handle(ref logRecord);
-                }
-            }
-        }
-
-        public sealed class Scope : IDisposable
-        {
-            private readonly Stopwatch _stopwatch = new();
-            private readonly string? _previousScope;
-
-            public Scope(string scopeName)
-            {
-                _previousScope = s_instance._scope;
-                s_instance._scope = _previousScope == null ? scopeName : $"{_previousScope}.{scopeName}";
-                _stopwatch.Start();
+                AnsiConsole.WriteLine("::endgroup::");
             }
 
-            public void Dispose()
-            {
-                _stopwatch.Stop();
-                TimeSpan elapsed = _stopwatch.Elapsed;
-                LogVerbose($"Completed in {elapsed.TotalMilliseconds} milliseconds.");
-                s_instance._scope = _previousScope;
-            }
+            Console.Out.Flush();
         }
     }
 }

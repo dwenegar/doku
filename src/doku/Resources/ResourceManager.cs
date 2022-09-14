@@ -10,15 +10,17 @@ namespace Doku.Resources
 {
     internal sealed class ResourceManager
     {
+        private readonly Logger _logger;
         private readonly ResourceFinder _finder;
 
-        public ResourceManager(Assembly assembly, string rootNamespace)
-            => _finder = new ResourceFinder(assembly, rootNamespace);
+        public ResourceManager(Assembly assembly, string rootNamespace, Logger logger)
+        {
+            _finder = new ResourceFinder(assembly, rootNamespace);
+            _logger = logger;
+        }
 
         public void ExportResources(string archiveName, string outputDirectory)
         {
-            using Logger.Scope scope = new("ExportResources");
-
             using ResourceReader? templateResource = _finder.Find(archiveName);
             if (templateResource == null)
             {
@@ -33,7 +35,7 @@ namespace Doku.Resources
                 using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
                 resourceStream.CopyTo(fs);
 
-                Logger.LogVerbose($"Exported resource `{resourceName}` to `{targetPath}`");
+                _logger.LogInfo($"Exported resource `{resourceName}` to `{targetPath}`");
             }
         }
     }
