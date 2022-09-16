@@ -8,5 +8,5 @@ namespace Doku.Utils;
 
 public static class GitHubActionHelpers
 {
-    public static readonly bool IsRunningOnGitHubAction = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
+    public static bool IsRunningOnGitHubAction { get; } = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
 }

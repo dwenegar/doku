@@ -8,25 +8,25 @@ using Spectre.Console;
 
 namespace Doku.Logging;
 
-public class AnsiConsoleOutputOverride : IAnsiConsoleOutput
+internal sealed class AnsiConsoleOutputOverride : IAnsiConsoleOutput
 {
-    private readonly IAnsiConsoleOutput _delegate;
+    private readonly IAnsiConsoleOutput _consoleOutput;
 
-    public AnsiConsoleOutputOverride(IAnsiConsoleOutput @delegate)
+    public AnsiConsoleOutputOverride(IAnsiConsoleOutput consoleOutput)
     {
-        _delegate = @delegate;
+        _consoleOutput = consoleOutput;
         Width = 80;
         Height = 80;
     }
 
-    public TextWriter Writer => _delegate.Writer;
+    public TextWriter Writer => _consoleOutput.Writer;
 
-    public bool IsTerminal => _delegate.IsTerminal;
+    public bool IsTerminal => _consoleOutput.IsTerminal;
 
-    public int Width { get; set; }
+    public int Width { get; init; }
 
-    public int Height { get; set; }
+    public int Height { get; init; }
 
     public void SetEncoding(Encoding encoding)
-        => _delegate.SetEncoding(encoding);
+        => _consoleOutput.SetEncoding(encoding);
 }

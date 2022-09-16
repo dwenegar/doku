@@ -11,6 +11,7 @@ using Lunet.Extensions.Logging.SpectreConsole;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
+using static Doku.Utils.GitHubActionHelpers;
 
 // ReSharper disable ReplaceAutoPropertyWithComputedProperty
 
@@ -35,9 +36,8 @@ internal abstract class CommandBase
     {
         using ILoggerFactory? factory = LoggerFactory.Create(builder =>
         {
-            bool isRunningOnGitHubAction = GitHubActionHelpers.IsRunningOnGitHubAction;
             IAnsiConsoleOutput consoleOutput = new AnsiConsoleOutput(Console.Out);
-            if (isRunningOnGitHubAction)
+            if (IsRunningOnGitHubAction)
             {
                 consoleOutput = new AnsiConsoleOutputOverride(consoleOutput)
                 {
@@ -51,7 +51,7 @@ internal abstract class CommandBase
                    {
                        ConsoleSettings = new AnsiConsoleSettings
                        {
-                           Ansi = isRunningOnGitHubAction ? AnsiSupport.No : default,
+                           Ansi = IsRunningOnGitHubAction ? AnsiSupport.No : default,
                            Out = consoleOutput
                        },
                        IndentAfterNewLine = false,

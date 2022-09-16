@@ -4,33 +4,30 @@
 
 using System;
 using System.Threading;
-using Doku.Utils;
-using Lunet.Extensions.Logging.SpectreConsole;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
+using static Doku.Utils.GitHubActionHelpers;
 
 namespace Doku.Logging;
 
 internal sealed class Logger
 {
     private readonly ILogger _logger;
-    private readonly bool _runningFromGitHubAction;
     private int _logId;
 
     public Logger(ILogger logger, LogLevel level)
     {
         _logger = logger;
         Level = level;
-        _runningFromGitHubAction = GitHubActionHelpers.IsRunningOnGitHubAction;
     }
 
     public LogLevel Level { get; }
 
     public bool HasErrors { get; private set; }
 
-    public IDisposable BeginGroup(string name) => new Scope(name, _runningFromGitHubAction);
+    public IDisposable BeginGroup(string title) => new Group(title);
 
-    public void Log(LogLevel level, Exception? exception, string? message, bool markup, params object?[] args)
+    public void Log(LogLevel level, Exception? exception, string? message, params object?[] args)
     {
         if (level == LogLevel.Error)
         {
@@ -38,36 +35,27 @@ internal sealed class Logger
         }
 
         int id = Interlocked.Increment(ref _logId);
-        if (markup)
-        {
-            _logger.LogMarkup(level, new EventId(id), exception, message, args);
-        }
-        else
-        {
-            _logger.Log(level, new EventId(id), exception, message, args);
-        }
+        _logger.Log(level, new EventId(id), exception, message, args);
     }
 
-    private sealed class Scope : IDisposable
+    private sealed class Group : IDisposable
     {
-        private readonly bool _isRunningFromGitHubAction;
-
-        public Scope(string name, bool isRunningFromGitHubAction)
+        public Group(string title)
         {
-            _isRunningFromGitHubAction = isRunningFromGitHubAction;
-            if (isRunningFromGitHubAction)
+            if (IsRunningOnGitHubAction)
             {
-                AnsiConsole.WriteLine($"::group::{name}");
+                // https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#grouping-log-lines
+                AnsiConsole.WriteLine($"::group::{title}");
             }
 
-            AnsiConsole.Write(new Rule(name) { Alignment = Justify.Left });
+            AnsiConsole.Write(new Rule(title) { Alignment = Justify.Left });
             Console.Out.Flush();
         }
 
         public void Dispose()
         {
             AnsiConsole.WriteLine();
-            if (_isRunningFromGitHubAction)
+            if (IsRunningOnGitHubAction)
             {
                 AnsiConsole.WriteLine("::endgroup::");
             }
