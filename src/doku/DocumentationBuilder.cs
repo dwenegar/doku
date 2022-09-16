@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Doku.Logging;
 using Doku.Utils;
 
@@ -34,7 +35,6 @@ internal sealed partial class DocumentationBuilder
     private ProjectConfig _projectConfig = new();
     private TemplateInfo? _templateInfo;
     private string? _packageManualPath;
-    private DocFx? _docFx;
 
     public DocumentationBuilder(string packagePath, string outputPath, string? buildPath, Logger logger)
     {
@@ -54,7 +54,7 @@ internal sealed partial class DocumentationBuilder
     public string? TemplatePath { get; init; }
     public string? StyleSheetPath { get; init; }
 
-    public void Build()
+    public async Task Build()
     {
         Verbose($"OutputPath: {_outputPath}");
         Verbose($"PackagePath: {_packagePath}");
@@ -91,7 +91,7 @@ internal sealed partial class DocumentationBuilder
             GenerateTableOfContents();
             GeneratePdfTableOfContents();
 
-            RunDocFx();
+            await RunDocFx();
 
             CopyFilesToOutputFolder();
         }

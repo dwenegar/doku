@@ -3,15 +3,15 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using Doku.Logging;
-using Doku.Utils;
-using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
+using Doku.Runners;
 
 namespace Doku;
 
 internal sealed partial class DocumentationBuilder
 {
+    private string? _docFxPath;
+
     private void CheckDocFx()
     {
         string? docFxPath = DocFxPath ?? FindDocFxInPath();
@@ -25,15 +25,14 @@ internal sealed partial class DocumentationBuilder
             docFxPath = Path.Combine(docFxPath, "docfx.exe");
         }
 
-        var docFx = new DocFx(docFxPath, _logger);
-        if (!docFx.Exists)
+        if (!File.Exists(docFxPath))
         {
             throw new Exception($"{docFxPath} is not a valid DocFx installation.");
         }
 
-        _docFx = docFx;
         Verbose($"DocFx Path: {docFxPath}");
-        Verbose($"DocFx Version: {docFx.Version}");
+
+        _docFxPath = docFxPath;
 
         static string? FindDocFxInPath()
         {
@@ -47,102 +46,13 @@ internal sealed partial class DocumentationBuilder
         }
     }
 
-    private void RunDocFx()
+    private async Task RunDocFx()
     {
         Verbose("Running docfx");
 
         string docFxJsonFile = Path.Combine(_buildPath, "docfx.json");
-        _docFx!.Run(docFxJsonFile, _buildPath, true);
-    }
 
-    private sealed class DocFx
-    {
-        private readonly string _path;
-        private readonly Logger _logger;
-
-        private Version? _version;
-
-        public DocFx(string path, Logger logger)
-        {
-            _path = path;
-            _logger = logger;
-        }
-
-        public bool Exists => File.Exists(_path);
-
-        public Version Version => _version ??= GetVersion();
-
-        public string Run(string arguments, string workingDirectory, bool withLog)
-        {
-            Action<string>? outputCallback = null;
-            if (withLog)
-            {
-                string logLevel = _logger.Level switch
-                {
-                    LogLevel.Trace => "Verbose",
-                    LogLevel.Information => "Info",
-                    LogLevel.Warning => "Warning",
-                    LogLevel.Error => "Error",
-                    _ => string.Empty
-                };
-
-                arguments = string.IsNullOrEmpty(arguments)
-                    ? $"--logLevel {logLevel}"
-                    : $"--logLevel {logLevel} {arguments}";
-                outputCallback = OnProgramOutput;
-            }
-
-
-            var ci = new CommandInfo(_path)
-            {
-                Arguments = arguments,
-                WorkingDirectory = workingDirectory,
-                OutputCallback = outputCallback
-            };
-
-            return Command.Run(ci, "Failed to run DocFx");
-        }
-
-        private void OnProgramOutput(string line)
-        {
-            if (line.Length == 0 || line[0] != '[')
-            {
-                _logger.LogTrace(line);
-                return;
-            }
-
-            int levelBegin = line.IndexOf(']');
-            if (levelBegin == -1)
-            {
-                _logger.LogTrace(line);
-                return;
-            }
-
-            int levelEnd = line.IndexOf(':', levelBegin);
-            string level = line.Substring(levelBegin + 1, levelEnd - levelBegin - 1);
-            string message = line.Substring(levelEnd + 1).Trim();
-
-            switch (level)
-            {
-                case "Verbose":
-                case "Info":
-                    _logger.LogTrace(message);
-                    break;
-                case "Warning":
-                    _logger.LogWarning(message);
-                    break;
-                case "Error":
-                    _logger.LogError(message);
-                    break;
-            }
-        }
-
-        private Version GetVersion()
-        {
-            string docFxOutput = Run("--version", string.Empty, false);
-            var regex = new Regex(@"docfx (\d+\.\d+\.\d+)", RegexOptions.Multiline);
-            Match match = regex.Match(docFxOutput);
-            return Version.Parse(match.Groups[1].Value);
-        }
+        var docFx = new DocFx(_docFxPath!, _logger);
+        await docFx.Run(docFxJsonFile, _buildPath);
     }
 }

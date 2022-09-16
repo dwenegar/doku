@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Doku.Logging;
 using Doku.Utils;
+using JetBrains.Annotations;
 using Lunet.Extensions.Logging.SpectreConsole;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -18,11 +19,19 @@ namespace Doku.Commands;
 internal abstract class CommandBase
 {
     [Option("--log-level", Description = "The level at which to log the tool operations.")]
-    protected LogLevel LogLevel { get; } = LogLevel.Information;
+    private LogLevel LogLevel { get; } = LogLevel.Information;
 
-    protected abstract Task<int> OnExecuteAsync(CommandLineApplication app);
+    [UsedImplicitly]
+    protected async Task<int> OnExecuteAsync(CommandLineApplication app)
+    {
+        Logger logger = InitializeLogging();
+        await ExecuteAsync(app, logger);
+        return logger.HasErrors ? 1 : 0;
+    }
 
-    protected Logger InitializeLogging()
+    protected abstract Task ExecuteAsync(CommandLineApplication app, Logger logger);
+
+    private Logger InitializeLogging()
     {
         using ILoggerFactory? factory = LoggerFactory.Create(builder =>
         {

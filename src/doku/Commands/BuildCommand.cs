@@ -41,10 +41,8 @@ internal sealed class BuildCommand : CommandBase
     private string PackagePath { get; } = Environment.CurrentDirectory;
 
     [UsedImplicitly]
-    protected override Task<int> OnExecuteAsync(CommandLineApplication app)
+    protected override async Task ExecuteAsync(CommandLineApplication app, Logger logger)
     {
-        Logger logger = InitializeLogging();
-
         DocumentationBuilder builder = new(PackagePath, OutputPath, BuildPath, logger)
         {
             DocFxPath = DocFxPath,
@@ -53,7 +51,6 @@ internal sealed class BuildCommand : CommandBase
             KeepBuildFolder = KeepBuildFolder
         };
 
-        builder.Build();
-        return Task.FromResult(0);
+        await builder.Build();
     }
 }
