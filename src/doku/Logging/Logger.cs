@@ -3,7 +3,6 @@
 // For terms of use, see LICENSE.txt
 
 using System;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using static Doku.Utils.GitHubActionHelpers;
@@ -13,7 +12,6 @@ namespace Doku.Logging;
 internal sealed class Logger
 {
     private readonly ILogger _logger;
-    private int _logId;
 
     public Logger(ILogger logger, LogLevel level)
     {
@@ -34,8 +32,7 @@ internal sealed class Logger
             HasErrors = true;
         }
 
-        int id = Interlocked.Increment(ref _logId);
-        _logger.Log(level, new EventId(id), exception, message, args);
+        _logger.Log(level, exception, message, args);
     }
 
     private sealed class Group : IDisposable

@@ -19,18 +19,30 @@ namespace Doku.Commands;
 
 internal abstract class CommandBase
 {
+    protected Logger? Logger { get; private set; }
+
     [Option("--log-level", Description = "The level at which to log the tool operations.")]
     private LogLevel LogLevel { get; } = LogLevel.Information;
+
+    protected abstract Task ExecuteAsync(CommandLineApplication app);
+
+    protected void Debug(string message) => Logger?.LogDebug(message);
+
+    protected void Trace(string message) => Logger?.LogTrace(message);
+
+    protected void Info(string message) => Logger?.LogInfo(message);
+
+    protected void Warning(string message) => Logger?.LogWarning(message);
+
+    protected void Error(string message) => Logger?.LogError(message);
 
     [UsedImplicitly]
     protected async Task<int> OnExecuteAsync(CommandLineApplication app)
     {
-        Logger logger = InitializeLogging();
-        await ExecuteAsync(app, logger);
-        return logger.HasErrors ? 1 : 0;
+        Logger = InitializeLogging();
+        await ExecuteAsync(app);
+        return Logger.HasErrors ? 1 : 0;
     }
-
-    protected abstract Task ExecuteAsync(CommandLineApplication app, Logger logger);
 
     private Logger InitializeLogging()
     {
@@ -57,7 +69,6 @@ internal abstract class CommandBase
                        IndentAfterNewLine = false,
                        IncludeTimestamp = true,
                        IncludeNewLineBeforeMessage = false,
-                       IncludeCategory = true
                    });
         });
 

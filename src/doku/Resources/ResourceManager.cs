@@ -30,12 +30,12 @@ namespace Doku.Resources
             foreach ((string resourceName, Stream resourceStream) in templateResource.GetResourceStreams())
             {
                 string targetPath = Path.Combine(outputDirectory, resourceName);
-                Files.CreateDirectory(Path.GetDirectoryName(targetPath));
+                Files.CreateDirectory(Path.GetDirectoryName(targetPath), _logger);
 
                 using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
                 resourceStream.CopyTo(fs);
 
-                _logger.LogInfo($"Exported resource `{resourceName}` to `{targetPath}`");
+                _logger.LogDebug($"Exported resource `{resourceName}` to `{targetPath}`");
             }
         }
     }
