@@ -1,7 +1,0 @@
-{
-    "_appTitle": "$APP_TITLE",
-    "_packageVersion": "$PACKAGE_VERSION",
-    "_enableSearch": $ENABLE_SEARCH,
-    "_appLogoPath": "logo.svg",
-    "_disableToc": false
-}
