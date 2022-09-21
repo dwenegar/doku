@@ -24,7 +24,7 @@ internal sealed partial class DocumentBuilder
         }
 
         LoadPackageInfo();
-        Info($"Building documentation for package {_packageInfo}");
+        Info($"Building documentation for package {_packageInfo!.DisplayName} {_packageInfo.Version} targeting {_packageInfo.Unity}");
 
         FindDocFx();
         Info($"Using DocFx at {_docFxPath}, version {await GetDocFxVersion()}");
@@ -107,7 +107,7 @@ internal sealed partial class DocumentBuilder
         {
             string packageJsonText = Files.ReadText(packageJsonPath);
             _packageInfo = JsonSerializer.Deserialize(packageJsonText, SerializerContext.Default.PackageInfo);
-            if (_packageInfo == null)
+            if (_packageInfo?.IsValid != true)
             {
                 throw new Exception("Invalid package.json.");
             }

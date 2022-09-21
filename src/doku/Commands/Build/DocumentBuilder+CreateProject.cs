@@ -151,6 +151,7 @@ internal sealed partial class DocumentBuilder
         string json = File.ReadAllText(srcPath);
 
         json = json.Replace("$DISABLE_DEFAULT_FILTER", _projectConfig.DisableDefaultFilter ? "true" : "false")
+                   .Replace("$UNITY_VERSION", _packageInfo!.Unity)
                    .Replace("$TEMPLATE", template.ToString());
 
         string dstPath = Path.Combine(_buildPath, "docfx.json");

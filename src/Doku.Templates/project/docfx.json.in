@@ -20,6 +20,9 @@
     }
   ],
   "build": {
+    "xref": [
+      "https://dwenegar.github.io/UnityXRefMap/$UNITY_VERSION/xrefmap.yml"
+    ],
     "content": [
       {
         "files": [
