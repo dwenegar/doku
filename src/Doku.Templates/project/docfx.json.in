@@ -15,7 +15,7 @@
       ],
       "dest": "api",
       "disableGitFeatures": false,
-      "disableDefaultFilter": $DISABLE_DEFAULT_FILTER,
+      "disableDefaultFilter": false,
       "filter": "filter.yml"
     }
   ],

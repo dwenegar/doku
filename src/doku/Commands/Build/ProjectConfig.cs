@@ -10,8 +10,6 @@ namespace Doku.Commands.Build;
 [Serializable]
 internal sealed class ProjectConfig
 {
-    public bool DisableDefaultFilter { get; set; }
-    public bool EnableSearch { get; set; }
     public ProjectConfigExcludes Excludes { get; set; } = new();
     public string[] DefineConstants { get; set; } = Array.Empty<string>();
     public string[] Sources { get; set; } = { "Editor", "Runtime" };

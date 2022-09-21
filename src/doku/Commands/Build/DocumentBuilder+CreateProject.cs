@@ -120,8 +120,7 @@ internal sealed partial class DocumentBuilder
         string source = await Files.ReadText(sourceFile);
 
         source = source.Replace("$APP_TITLE", _packageInfo!.DisplayName)
-                       .Replace("$PACKAGE_VERSION", _packageInfo.Version)
-                       .Replace("$ENABLE_SEARCH", _projectConfig!.EnableSearch ? "true" : "false");
+                       .Replace("$PACKAGE_VERSION", _packageInfo.Version);
 
         string destinationFile = Path.Combine(_buildPath, "globalMetadata.json");
 
@@ -151,8 +150,7 @@ internal sealed partial class DocumentBuilder
         string srcPath = Path.Combine(_buildPath, "docfx.json.in");
         string json = await Files.ReadText(srcPath);
 
-        json = json.Replace("$DISABLE_DEFAULT_FILTER", _projectConfig!.DisableDefaultFilter ? "true" : "false")
-                   .Replace("$UNITY_VERSION", _packageInfo!.Unity)
+        json = json.Replace("$UNITY_VERSION", _packageInfo!.Unity)
                    .Replace("$TEMPLATE", template.ToString());
 
         string dstPath = Path.Combine(_buildPath, "docfx.json");

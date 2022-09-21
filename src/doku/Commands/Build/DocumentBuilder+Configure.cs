@@ -31,8 +31,6 @@ internal sealed partial class DocumentBuilder
         }
 
         _projectConfig = await LoadConfiguration();
-        Info($"Disable default filter: {(_projectConfig.DisableDefaultFilter ? "YES" : "NO")}");
-        Info($"Enable search: {(_projectConfig.EnableSearch ? "YES" : "NO")}");
         Info($"Define constants: {string.Join(',', _projectConfig.DefineConstants)}");
 
         string[] sources = _projectConfig.Sources.Select(x => x.NormalizeSeparators()).ToArray();
