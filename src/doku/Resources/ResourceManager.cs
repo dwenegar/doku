@@ -6,37 +6,32 @@ using System.Reflection;
 using Doku.Logging;
 using Doku.Utils;
 
-namespace Doku.Resources
-{
-    internal sealed class ResourceManager
-    {
-        private readonly Logger _logger;
-        private readonly ResourceFinder _finder;
+namespace Doku.Resources;
 
-        public ResourceManager(Assembly assembly, string rootNamespace, Logger logger)
+internal sealed class ResourceManager
+{
+    private readonly Logger _logger;
+
+    public ResourceManager(Logger logger) => _logger = logger;
+
+    public void ExportAssemblyResources(Assembly assembly, string archiveName, string outputDirectory)
+    {
+        var finder = new AssemblyResourceFinder(assembly);
+        using ResourceReader? templateResource = finder.Find(archiveName);
+        if (templateResource == null)
         {
-            _finder = new ResourceFinder(assembly, rootNamespace);
-            _logger = logger;
+            throw new Exception($"Could not find resource `{archiveName}`");
         }
 
-        public void ExportResources(string archiveName, string outputDirectory)
+        foreach ((string resourceName, Stream resourceStream) in templateResource.GetResourceStreams())
         {
-            using ResourceReader? templateResource = _finder.Find(archiveName);
-            if (templateResource == null)
-            {
-                throw new Exception($"Could not find resource `{archiveName}`");
-            }
+            string targetPath = Path.Combine(outputDirectory, resourceName);
+            Files.CreateDirectory(Path.GetDirectoryName(targetPath), _logger);
 
-            foreach ((string resourceName, Stream resourceStream) in templateResource.GetResourceStreams())
-            {
-                string targetPath = Path.Combine(outputDirectory, resourceName);
-                Files.CreateDirectory(Path.GetDirectoryName(targetPath), _logger);
+            using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+            resourceStream.CopyTo(fs);
 
-                using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-                resourceStream.CopyTo(fs);
-
-                _logger.LogDebug($"Exported resource `{resourceName}` to `{targetPath}`");
-            }
+            _logger.LogDebug($"Exported resource `{resourceName}` to `{targetPath}`");
         }
     }
 }

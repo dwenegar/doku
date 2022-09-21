@@ -31,9 +31,9 @@ internal sealed partial class DocumentBuilder
     {
         Info("Extracting the DocFX base project");
 
-        Assembly assembly = typeof(Program).Assembly;
-        var resourceManager = new ResourceManager(assembly, "Templates", _logger);
-        resourceManager.ExportResources("project", _buildPath);
+        Assembly assembly = GetType().Assembly;
+        var resourceManager = new ResourceManager(_logger);
+        resourceManager.ExportAssemblyResources(assembly, "doku.templates.project.zip", _buildPath);
     }
 
     private void CopyResources()
