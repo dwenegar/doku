@@ -74,7 +74,6 @@ internal sealed class DocFx
         int levelEnd = line.IndexOf(':', levelBegin + 1);
         LogLevel level = line[(levelBegin + 1)..levelEnd] switch
         {
-            "Info" => LogLevel.Information,
             "Warning" => LogLevel.Warning,
             "Error" => LogLevel.Error,
             _ => LogLevel.Debug
