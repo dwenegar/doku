@@ -75,7 +75,7 @@ internal sealed partial class DocumentBuilder
             "<Project ToolsVersion=\"4.0\" DefaultTargets=\"FullPublish\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n"
             + "  <PropertyGroup>\n"
             + "    <DefineConstants>{0}</DefineConstants>\n"
-            + "    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>"
+            + "    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>"
             + "  </PropertyGroup>\n"
             + "  <ItemGroup>\n"
             + "{1}"
