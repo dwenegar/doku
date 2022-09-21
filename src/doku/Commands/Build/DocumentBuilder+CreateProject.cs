@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Doku.Resources;
 using Doku.Utils;
 
@@ -15,64 +16,64 @@ namespace Doku.Commands.Build;
 
 internal sealed partial class DocumentBuilder
 {
-    private void CreateProject()
+    private async Task CreateProject()
     {
         using IDisposable _ = _logger.BeginGroup("Creating the DocFX project");
 
-        ExtractDocFxProject();
-        CopyResources();
-        CreateCSharpProject();
-        CreateGlobalMetadataJson();
-        CreateDocFxJson();
-        CreateTableOfContents();
+        await ExtractDocFxProject();
+        await CopyResources();
+        await CreateCSharpProject();
+        await CreateGlobalMetadataJson();
+        await CreateDocFxJson();
+        await CreateTableOfContents();
     }
 
-    private void ExtractDocFxProject()
+    private async Task ExtractDocFxProject()
     {
         Info("Extracting the DocFX base project");
 
         Assembly assembly = GetType().Assembly;
         var resourceManager = new ResourceManager(_logger);
-        resourceManager.ExportAssemblyResources(assembly, "doku.templates.project.zip", _buildPath);
+        await resourceManager.ExportAssemblyResources(assembly, "doku.templates.project.zip", _buildPath);
     }
 
-    private void CopyResources()
+    private async Task CopyResources()
     {
-        CopyTemplateFiles();
+        await CopyTemplateFiles();
 
         if (!_projectConfig.Excludes.ApiDocs)
         {
-            CopySourceFiles();
+            await CopySourceFiles();
         }
 
         if (!_projectConfig.Excludes.License)
         {
-            CopyLicenses();
+            await CopyLicenses();
         }
 
         if (!_projectConfig.Excludes.Changelog)
         {
-            CopyChangelog();
+            await CopyChangelog();
         }
 
         if (Directory.Exists(_packageDocumentationPath))
         {
-            Files.TryCopyFile("logo.svg", _packageDocumentationPath, _buildPath, _logger);
-            Files.TryCopyFile("favicon.ico", _packageDocumentationPath, _buildPath, _logger);
+            await Files.TryCopyFile("logo.svg", _packageDocumentationPath, _buildPath, _logger);
+            await Files.TryCopyFile("favicon.ico", _packageDocumentationPath, _buildPath, _logger);
 
             if (!_projectConfig.Excludes.Manual)
             {
-                CopyManualFiles();
+                await CopyManualFiles();
             }
         }
     }
 
-    private void CreateCSharpProject()
+    private async Task CreateCSharpProject()
     {
         Info("Creating the C# project.");
 
         const string projectTemplate =
-            "<Project ToolsVersion=\"4.0\" DefaultTargets=\"FullPublish\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n"
+            "<Project ToolsVersion=\"4.0\" DefaultTargets=\"FullPublish\" xmlns=\"https://schemas.microsoft.com/developer/msbuild/2003\">\n"
             + "  <PropertyGroup>\n"
             + "    <DefineConstants>{0}</DefineConstants>\n"
             + "    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>"
@@ -108,15 +109,15 @@ internal sealed partial class DocumentBuilder
 
         Directory.CreateDirectory(_buildSourcesPath);
         var projectContent = string.Format(projectTemplate, GetDefineConstants(), GetCompileItems());
-        Files.WriteText(Path.Combine(_buildSourcesPath, "doku.csproj"), projectContent, _logger);
+        await Files.WriteText(Path.Combine(_buildSourcesPath, "doku.csproj"), projectContent, _logger);
     }
 
-    private void CreateGlobalMetadataJson()
+    private async Task CreateGlobalMetadataJson()
     {
         Info("Creating the globalMetadata.json file");
 
         string sourceFile = Path.Combine(_buildPath, "globalMetadata.json.in");
-        string source = File.ReadAllText(sourceFile);
+        string source = await Files.ReadText(sourceFile);
 
         source = source.Replace("$APP_TITLE", _packageInfo!.DisplayName)
                        .Replace("$PACKAGE_VERSION", _packageInfo!.Version)
@@ -124,10 +125,10 @@ internal sealed partial class DocumentBuilder
 
         string destinationFile = Path.Combine(_buildPath, "globalMetadata.json");
 
-        Files.WriteText(destinationFile, source, _logger);
+        await Files.WriteText(destinationFile, source, _logger);
     }
 
-    private void CreateDocFxJson()
+    private async Task CreateDocFxJson()
     {
         Info("Creating the docfx.json file");
 
@@ -148,17 +149,17 @@ internal sealed partial class DocumentBuilder
         }
 
         string srcPath = Path.Combine(_buildPath, "docfx.json.in");
-        string json = File.ReadAllText(srcPath);
+        string json = await Files.ReadText(srcPath);
 
         json = json.Replace("$DISABLE_DEFAULT_FILTER", _projectConfig.DisableDefaultFilter ? "true" : "false")
                    .Replace("$UNITY_VERSION", _packageInfo!.Unity)
                    .Replace("$TEMPLATE", template.ToString());
 
         string dstPath = Path.Combine(_buildPath, "docfx.json");
-        Files.WriteText(dstPath, json, _logger);
+        await Files.WriteText(dstPath, json, _logger);
     }
 
-    private void CreateTableOfContents()
+    private async Task CreateTableOfContents()
     {
         Info("Creating the main table of contents");
 
@@ -191,10 +192,10 @@ internal sealed partial class DocumentBuilder
         }
 
         string dstPath = Path.Combine(_buildPath, "toc.yml");
-        Files.WriteText(dstPath, toc.ToString(), _logger);
+        await Files.WriteText(dstPath, toc.ToString(), _logger);
     }
 
-    private void CreateManualTableOfContents(IEnumerable<string> manualFiles, string tocSourcePath)
+    private async Task CreateManualTableOfContents(IEnumerable<string> manualFiles, string tocSourcePath)
     {
         Info("Creating the manual's table of contents");
 
@@ -231,21 +232,21 @@ internal sealed partial class DocumentBuilder
             AppendTocSection(sb, entry, 0);
         }
 
-        Files.WriteText(tocSourcePath, sb.ToString(), _logger);
+        await Files.WriteText(tocSourcePath, sb.ToString(), _logger);
     }
 
-    private void CopyTemplateFiles()
+    private async Task CopyTemplateFiles()
     {
         Info("Copying the template files");
 
         if (_templatePath is not null)
         {
             string dst = Path.GetFullPath(Path.Combine(_buildPath, TemplateFolder));
-            Files.CopyDirectory(_templatePath, dst, "*.*", _logger);
+            await Files.CopyDirectory(_templatePath, dst, "*.*", _logger);
         }
     }
 
-    private void CopySourceFiles()
+    private async Task CopySourceFiles()
     {
         Info("Copying the source code");
 
@@ -254,17 +255,17 @@ internal sealed partial class DocumentBuilder
         {
             string src = Path.Combine(_packagePath, source);
             string dst = Path.Combine(_buildSourcesPath, source);
-            count += Files.CopyDirectory(src, dst, "*.cs", _logger);
+            count += await Files.CopyDirectory(src, dst, "*.cs", _logger);
         }
 
         _hasApiDocs = count > 0;
     }
 
-    private void CopyManualFiles()
+    private async Task CopyManualFiles()
     {
         Info("Copying the manual files");
 
-        Files.CopyDirectory(_packageDocumentationPath, _buildManualPath, "*.*", _logger);
+        await Files.CopyDirectory(_packageDocumentationPath, _buildManualPath, "*.*", _logger);
 
         if (!Directory.EnumerateFiles(_buildManualPath, "*.md", SearchOption.AllDirectories).Any())
         {
@@ -295,21 +296,25 @@ internal sealed partial class DocumentBuilder
         if (!File.Exists(tocSourcePath))
         {
             Warning("Missing `toc.yml` file; will create one.");
-            CreateManualTableOfContents(files, tocSourcePath);
+            await CreateManualTableOfContents(files, tocSourcePath);
         }
     }
 
-    private void CopyLicenses()
+    private async Task CopyLicenses()
     {
         Info("Copying licenses");
 
         var toc = new StringBuilder();
 
         string[] licenseFiles = { "LICENSE.md", "LICENSE.text" };
-        if (licenseFiles.Any(x => TryCopyPackageFileToBuildFolder(x, "license/LICENSE.md")))
+        foreach (string licenseFile in licenseFiles)
         {
-            toc.AppendLine("- name: License") //
-               .AppendLine("  href: LICENSE.md");
+            if (await TryCopyPackageFileToBuildFolder(licenseFile, "license/LICENSE.md"))
+            {
+                toc.AppendLine("- name: License") //
+                   .AppendLine("  href: LICENSE.md");
+            }
+
         }
 
         string[] thirdPartyLicenseFiles =
@@ -320,10 +325,13 @@ internal sealed partial class DocumentBuilder
             "ThirdPartyNotices.txt"
         };
 
-        if (thirdPartyLicenseFiles.Any(x => TryCopyPackageFileToBuildFolder(x, "license/ThirdPartyNotices.md")))
+        foreach (string thirdPartyLicenseFile in thirdPartyLicenseFiles)
         {
-            toc.AppendLine("- name: Third Party Notices") //
-               .AppendLine("  href: ThirdPartyNotices.md");
+            if (await TryCopyPackageFileToBuildFolder(thirdPartyLicenseFile, "license/ThirdPartyNotices.md"))
+            {
+                toc.AppendLine("- name: Third Party Notices") //
+                   .AppendLine("  href: ThirdPartyNotices.md");
+            }
         }
 
         if (toc.Length > 0)
@@ -334,17 +342,17 @@ internal sealed partial class DocumentBuilder
             Directory.CreateDirectory(destinationFolder);
 
             string indexFile = Path.Combine(destinationFolder, "index.md");
-            Files.WriteText(indexFile, "<script>window.location.replace('LICENSE.html')</script>", _logger);
+            await Files.WriteText(indexFile, "<script>window.location.replace('LICENSE.html')</script>", _logger);
 
             string tocFile = Path.Combine(destinationFolder, "toc.yml");
-            Files.WriteText(tocFile, toc.ToString(), _logger);
+            await Files.WriteText(tocFile, toc.ToString(), _logger);
         }
     }
 
-    private void CopyChangelog()
+    private async Task CopyChangelog()
     {
         Info("Copying changelog");
-        if (TryCopyPackageFileToBuildFolder("CHANGELOG.md", "changelog/CHANGELOG.md"))
+        if (await TryCopyPackageFileToBuildFolder("CHANGELOG.md", "changelog/CHANGELOG.md"))
         {
             _hasChangeLog = true;
 
@@ -356,10 +364,10 @@ internal sealed partial class DocumentBuilder
             Directory.CreateDirectory(destinationFolder);
 
             string indexFile = Path.Combine(destinationFolder, "index.md");
-            Files.WriteText(indexFile, "<script>window.location.replace('CHANGELOG.html')</script>", _logger);
+            await Files.WriteText(indexFile, "<script>window.location.replace('CHANGELOG.html')</script>", _logger);
 
             string tocFile = Path.Combine(destinationFolder, "toc.yml");
-            Files.WriteText(tocFile, tocContent.ToString(), _logger);
+            await Files.WriteText(tocFile, tocContent.ToString(), _logger);
         }
     }
 

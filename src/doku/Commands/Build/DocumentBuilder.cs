@@ -63,10 +63,9 @@ internal sealed partial class DocumentBuilder
             Files.DeleteDirectory(_buildPath, _logger);
 
             await Configure();
-            CreateProject();
+            await CreateProject();
             await RunDocFx();
-
-            CopyFilesToOutputFolder();
+            await CopyFilesToOutputFolder();
         }
         catch (Exception e)
         {
@@ -81,18 +80,18 @@ internal sealed partial class DocumentBuilder
         }
     }
 
-    private void CopyFilesToOutputFolder()
+    private async Task CopyFilesToOutputFolder()
     {
         using IDisposable _ = _logger.BeginGroup("Copying files to output folder");
 
         string sourcePath = Path.Combine(_buildPath, "_site");
-        Files.CopyDirectory(sourcePath, _outputPath, "*.*", _logger);
+        await Files.CopyDirectory(sourcePath, _outputPath, "*.*", _logger);
     }
 
-    private bool TryCopyPackageFileToBuildFolder(string fileName, string? destinationFileName = null)
+    private async Task<bool> TryCopyPackageFileToBuildFolder(string fileName, string? destinationFileName = null)
     {
         string source = Path.Combine(_packagePath, fileName);
         string destination = Path.Combine(_buildPath, destinationFileName ?? fileName);
-        return Files.TryCopyFile(source, destination, _logger);
+        return await Files.TryCopyFile(source, destination, _logger);
     }
 }

@@ -1,22 +1,22 @@
 // Copyright (c) Simone Livieri. For terms of use, see LICENSE.txt
 
 using System.IO;
-using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Doku.Logging;
 
 namespace Doku.Utils;
 
 internal static class Files
 {
-    public static void WriteText(string path, string text, Logger logger)
+    public static async Task WriteText(string path, string text, Logger logger)
     {
-        File.WriteAllText(path, text, Encoding.UTF8);
+        await File.WriteAllTextAsync(path, text, Encoding.UTF8);
         logger.LogDebug($"Written {path}");
     }
 
-    public static string ReadText(string path)
-        => File.ReadAllText(path, Encoding.UTF8);
+    public static async Task<string> ReadText(string path)
+        => await File.ReadAllTextAsync(path, Encoding.UTF8);
 
     public static void DeleteDirectory(string path, Logger logger)
     {
@@ -49,15 +49,17 @@ internal static class Files
         }
     }
 
-    public static void TryCopyFile(string filename, string srcDir, string dstDir, Logger logger)
-        => TryCopyFile(Path.Combine(srcDir, filename), Path.Combine(dstDir, filename), logger);
+    public static async Task TryCopyFile(string filename, string srcDir, string dstDir, Logger logger)
+        => await TryCopyFile(Path.Combine(srcDir, filename), Path.Combine(dstDir, filename), logger);
 
-    public static bool TryCopyFile(string src, string dst, Logger logger)
+    public static async Task<bool> TryCopyFile(string src, string dst, Logger logger)
     {
         if (File.Exists(src))
         {
             CreateDirectory(Path.GetDirectoryName(dst), logger);
-            File.Copy(src, dst, true);
+            await using FileStream srcStream = File.OpenRead(src);
+            await using FileStream dstStream = File.OpenWrite(dst);
+            await srcStream.CopyToAsync(dstStream);
             logger.LogDebug($"Copied {src} to {dst}");
             return true;
         }
@@ -65,7 +67,7 @@ internal static class Files
         return false;
     }
 
-    public static int CopyDirectory(string src, string dst, string filter, Logger logger)
+    public static async Task<int> CopyDirectory(string src, string dst, string filter, Logger logger)
     {
         var count = 0;
         if (Directory.Exists(src))
@@ -76,8 +78,13 @@ internal static class Files
                 CreateDirectory(path.Replace(src, dst), logger);
             }
 
-            count += Directory.GetFiles(src, filter, SearchOption.AllDirectories)
-                              .Count(x => TryCopyFile(x, x.Replace(src, dst), logger));
+            foreach (string x in Directory.GetFiles(src, filter, SearchOption.AllDirectories))
+            {
+                if (await TryCopyFile(x, x.Replace(src, dst), logger))
+                {
+                    count++;
+                }
+            }
         }
 
         return count;

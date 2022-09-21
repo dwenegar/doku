@@ -5,12 +5,12 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Doku.Utils;
 
 namespace Doku.Commands.Build;
+
 internal sealed partial class DocumentBuilder
 {
     private async Task Configure()
@@ -23,7 +23,7 @@ internal sealed partial class DocumentBuilder
             Info($"Running from GitHub: {gitHubInfo}");
         }
 
-        LoadPackageInfo();
+        await LoadPackageInfo();
         Info($"Building documentation for package {_packageInfo!.DisplayName} {_packageInfo.Version} targeting {_packageInfo.Unity}");
 
         FindDocFx();
@@ -31,22 +31,9 @@ internal sealed partial class DocumentBuilder
         Info($"Writing files to {_outputPath}");
         Info($"The build directory is {_buildPath}");
 
-        if (TryLoadTemplateInfo(out TemplateInfo? templateInfo, out string? templatePath))
-        {
-            Info($"Using {(templateInfo!.Type == TemplateType.Full ? string.Empty : "partial ")} template at {templatePath!}");
-            _templateInfo = templateInfo;
-            _templatePath = templatePath;
-        }
-        else if (TryCopyStyle(out string? stylesheetPath))
-        {
-            Info($"Using stylesheet at {stylesheetPath!}");
-            _templateInfo = new TemplateInfo
-            {
-                Type = TemplateType.Partial
-            };
-        }
+        await ConfigureTemplate();
 
-        LoadConfiguration();
+        await LoadConfiguration();
         Info("Configuration");
         Info($"  Disable default filter: {(_projectConfig.DisableDefaultFilter ? "YES" : "NO")}");
         Info($"  Enable search: {(_projectConfig.EnableSearch ? "YES" : "NO")}");
@@ -66,6 +53,51 @@ internal sealed partial class DocumentBuilder
         Info($"  Exclude API docs: {(_projectConfig.Excludes.ApiDocs ? "YES" : "NO")}");
         Info($"  Exclude changelog: {(_projectConfig.Excludes.Changelog ? "YES" : "NO")}");
         Info($"  Exclude license: {(_projectConfig.Excludes.License ? "YES" : "NO")}");
+    }
+
+    private async Task ConfigureTemplate()
+    {
+        if (TemplatePath is not null)
+        {
+            string templatePath = Path.GetFullPath(TemplatePath);
+            _templateInfo = await LoadTemplateInfo(templatePath);
+            _templatePath = templatePath;
+            Info($"Using {(_templateInfo.Type == TemplateType.Full ? string.Empty : "partial ")} template at {templatePath}");
+        }
+        else if (StyleSheetPath is not null)
+        {
+            string stylesheetPath = Path.GetFullPath(StyleSheetPath);
+            string defaultStylesheetPath = Path.Combine(_packageDocumentationPath, "style.css");
+            if (await TryCopyStyle(stylesheetPath))
+            {
+                Info($"Using stylesheet at {stylesheetPath}");
+                _templateInfo = new TemplateInfo
+                {
+                    Type = TemplateType.Partial
+                };
+            }
+            else if (await TryCopyStyle(defaultStylesheetPath))
+            {
+                Info($"Using stylesheet at {defaultStylesheetPath}");
+                _templateInfo = new TemplateInfo
+                {
+                    Type = TemplateType.Partial
+                };
+            }
+        }
+
+        static async Task<TemplateInfo> LoadTemplateInfo(string templatePath)
+        {
+            if (!Directory.Exists(templatePath))
+            {
+                throw new Exception($"{templatePath} does not exists.");
+            }
+
+            string path = Path.Combine(templatePath, "template.json");
+            string json = await Files.ReadText(path);
+            TemplateInfo? templateInfo = JsonSerializer.Deserialize(json, SerializerContext.Default.TemplateInfo);
+            return templateInfo ?? throw new Exception($"Failed to load {path}.");
+        }
     }
 
     private void FindDocFx()
@@ -100,12 +132,12 @@ internal sealed partial class DocumentBuilder
         }
     }
 
-    private void LoadPackageInfo()
+    private async Task LoadPackageInfo()
     {
         string packageJsonPath = Path.Combine(_packagePath, "package.json");
         try
         {
-            string packageJsonText = Files.ReadText(packageJsonPath);
+            string packageJsonText = await Files.ReadText(packageJsonPath);
             _packageInfo = JsonSerializer.Deserialize(packageJsonText, SerializerContext.Default.PackageInfo);
             if (_packageInfo?.IsValid != true)
             {
@@ -118,60 +150,19 @@ internal sealed partial class DocumentBuilder
         }
     }
 
-    private bool TryLoadTemplateInfo(out TemplateInfo? templateInfo, out string? templatePath)
+    private async Task<bool> TryCopyStyle(string stylesheetPath)
     {
-        templateInfo = null;
-        templatePath = null;
-        if (TemplatePath == null)
-        {
-            return false;
-        }
-
-        templatePath = Path.GetFullPath(TemplatePath);
-        if (!Directory.Exists(templatePath))
-        {
-            throw new Exception($"{templatePath} does not exists.");
-        }
-
-        string path = Path.Combine(templatePath, "template.json");
-        string json = File.ReadAllText(path, Encoding.UTF8);
-        templateInfo = JsonSerializer.Deserialize(json, SerializerContext.Default.TemplateInfo);
-        if (templateInfo == null)
-        {
-            throw new Exception($"Failed to load {path}.");
-        }
-
-        return true;
+        string dst = Path.Combine(_buildPath, TemplateFolder, "styles/main.css");
+        return await Files.TryCopyFile(stylesheetPath, dst, _logger);
     }
 
-    private bool TryCopyStyle(out string? stylesheetPath)
-    {
-        stylesheetPath = null;
-        if (StyleSheetPath != null)
-        {
-            stylesheetPath = Path.GetFullPath(StyleSheetPath);
-        }
-        else if (Directory.Exists(_packageDocumentationPath))
-        {
-            stylesheetPath = Path.Combine(_packageDocumentationPath, "style.css");
-        }
-
-        if (stylesheetPath != null)
-        {
-            string dst = Path.Combine(_buildPath, TemplateFolder, "styles/main.css");
-            return Files.TryCopyFile(stylesheetPath, dst, _logger);
-        }
-
-        return false;
-    }
-
-    private void LoadConfiguration()
+    private async Task LoadConfiguration()
     {
         string path = Path.Combine(_packageDocumentationPath, "config.json");
         ProjectConfig? projectConfig = null;
         if (File.Exists(path))
         {
-            string json = Files.ReadText(path);
+            string json = await Files.ReadText(path);
             projectConfig = JsonSerializer.Deserialize(json, SerializerContext.Default.ProjectConfig);
         }
 
