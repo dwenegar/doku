@@ -15,5 +15,5 @@ internal enum TemplateType
 [Serializable]
 internal sealed class TemplateInfo
 {
-    public TemplateType Type { get; set; }
+    public TemplateType Type { get; set; } = TemplateType.Partial;
 }

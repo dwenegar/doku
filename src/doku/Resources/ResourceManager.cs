@@ -22,6 +22,7 @@ internal sealed class ResourceManager
         using var httpClient = new HttpClient();
         try
         {
+            _logger.LogInfo($"Downloading {url}");
             return await httpClient.GetStringAsync(url);
         }
         catch (Exception e)

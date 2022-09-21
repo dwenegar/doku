@@ -41,7 +41,7 @@ internal sealed partial class DocumentBuilder
     {
         await CopyTemplateFiles();
 
-        if (!_projectConfig.Excludes.ApiDocs)
+        if (!_projectConfig!.Excludes.ApiDocs)
         {
             await CopySourceFiles();
         }
@@ -88,7 +88,7 @@ internal sealed partial class DocumentBuilder
         {
             var sb = new StringBuilder();
             sb.Append((string?)PackageDocsGenerationDefine);
-            foreach (string defineConstant in _projectConfig.DefineConstants)
+            foreach (string defineConstant in _projectConfig!.DefineConstants)
             {
                 sb.Append(';').Append(defineConstant);
             }
@@ -120,8 +120,8 @@ internal sealed partial class DocumentBuilder
         string source = await Files.ReadText(sourceFile);
 
         source = source.Replace("$APP_TITLE", _packageInfo!.DisplayName)
-                       .Replace("$PACKAGE_VERSION", _packageInfo!.Version)
-                       .Replace("$ENABLE_SEARCH", _projectConfig.EnableSearch ? "true" : "false");
+                       .Replace("$PACKAGE_VERSION", _packageInfo.Version)
+                       .Replace("$ENABLE_SEARCH", _projectConfig!.EnableSearch ? "true" : "false");
 
         string destinationFile = Path.Combine(_buildPath, "globalMetadata.json");
 
@@ -151,7 +151,7 @@ internal sealed partial class DocumentBuilder
         string srcPath = Path.Combine(_buildPath, "docfx.json.in");
         string json = await Files.ReadText(srcPath);
 
-        json = json.Replace("$DISABLE_DEFAULT_FILTER", _projectConfig.DisableDefaultFilter ? "true" : "false")
+        json = json.Replace("$DISABLE_DEFAULT_FILTER", _projectConfig!.DisableDefaultFilter ? "true" : "false")
                    .Replace("$UNITY_VERSION", _packageInfo!.Unity)
                    .Replace("$TEMPLATE", template.ToString());
 
@@ -251,7 +251,7 @@ internal sealed partial class DocumentBuilder
         Info("Copying the source code");
 
         var count = 0;
-        foreach (string source in _projectConfig.Sources)
+        foreach (string source in _projectConfig!.Sources)
         {
             string src = Path.Combine(_packagePath, source);
             string dst = Path.Combine(_buildSourcesPath, source);

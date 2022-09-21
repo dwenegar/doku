@@ -30,7 +30,7 @@ internal sealed partial class DocumentBuilder
     private string? _manualHomePage;
 
     private PackageInfo? _packageInfo;
-    private ProjectConfig _projectConfig = new();
+    private ProjectConfig? _projectConfig;
     private TemplateInfo? _templateInfo;
     private string? _templatePath;
 

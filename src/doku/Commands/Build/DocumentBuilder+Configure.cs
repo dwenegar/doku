@@ -23,17 +23,17 @@ internal sealed partial class DocumentBuilder
             Info($"Running from GitHub: {gitHubInfo}");
         }
 
-        await LoadPackageInfo();
-        Info($"Building documentation for package {_packageInfo!.DisplayName} {_packageInfo.Version} targeting {_packageInfo.Unity}");
+        _packageInfo = await LoadPackageInfo();
+        Info($"Building documentation for package {_packageInfo.DisplayName} {_packageInfo.Version} targeting {_packageInfo.Unity}");
 
-        FindDocFx();
+        _docFxPath = FindDocFx();
         Info($"Using DocFx at {_docFxPath}, version {await GetDocFxVersion()}");
         Info($"Writing files to {_outputPath}");
         Info($"The build directory is {_buildPath}");
 
-        await ConfigureTemplate();
+        (_templateInfo, _templatePath) = await ConfigureTemplate();
 
-        await LoadConfiguration();
+        _projectConfig = await LoadConfiguration();
         Info("Configuration");
         Info($"  Disable default filter: {(_projectConfig.DisableDefaultFilter ? "YES" : "NO")}");
         Info($"  Enable search: {(_projectConfig.EnableSearch ? "YES" : "NO")}");
@@ -55,35 +55,33 @@ internal sealed partial class DocumentBuilder
         Info($"  Exclude license: {(_projectConfig.Excludes.License ? "YES" : "NO")}");
     }
 
-    private async Task ConfigureTemplate()
+    private async Task<(TemplateInfo?, string?)> ConfigureTemplate()
     {
         if (TemplatePath is not null)
         {
             string templatePath = Path.GetFullPath(TemplatePath);
-            _templateInfo = await LoadTemplateInfo(templatePath);
-            _templatePath = templatePath;
-            Info($"Using {(_templateInfo.Type == TemplateType.Full ? string.Empty : "partial ")} template at {templatePath}");
+            TemplateInfo templateInfo = await LoadTemplateInfo(templatePath);
+            Info($"Using {(templateInfo.Type == TemplateType.Full ? string.Empty : "partial ")} template at {templatePath}");
+            return (templateInfo, templatePath);
         }
-        else if (StyleSheetPath is not null)
+
+        if (StyleSheetPath is null)
         {
-            string stylesheetPath = Path.GetFullPath(StyleSheetPath);
-            string defaultStylesheetPath = Path.Combine(_packageDocumentationPath, "style.css");
-            if (await TryCopyStyle(stylesheetPath))
-            {
-                Info($"Using stylesheet at {stylesheetPath}");
-                _templateInfo = new TemplateInfo
-                {
-                    Type = TemplateType.Partial
-                };
-            }
-            else if (await TryCopyStyle(defaultStylesheetPath))
-            {
-                Info($"Using stylesheet at {defaultStylesheetPath}");
-                _templateInfo = new TemplateInfo
-                {
-                    Type = TemplateType.Partial
-                };
-            }
+            return (null, null);
+        }
+
+        string stylesheetPath = Path.GetFullPath(StyleSheetPath);
+        if (await TryCopyStyle(stylesheetPath))
+        {
+            Info($"Using stylesheet at {stylesheetPath}");
+            return (new TemplateInfo(), null);
+        }
+
+        string defaultStylesheetPath = Path.Combine(_packageDocumentationPath, "style.css");
+        if (await TryCopyStyle(defaultStylesheetPath))
+        {
+            Info($"Using stylesheet at {defaultStylesheetPath}");
+            return (new TemplateInfo(), null);
         }
 
         static async Task<TemplateInfo> LoadTemplateInfo(string templatePath)
@@ -98,9 +96,11 @@ internal sealed partial class DocumentBuilder
             TemplateInfo? templateInfo = JsonSerializer.Deserialize(json, SerializerContext.Default.TemplateInfo);
             return templateInfo ?? throw new Exception($"Failed to load {path}.");
         }
+
+        return (null, null);
     }
 
-    private void FindDocFx()
+    private string FindDocFx()
     {
         string? docFxPath = DocFxPath ?? FindDocFxInPath();
         if (docFxPath == null)
@@ -118,7 +118,7 @@ internal sealed partial class DocumentBuilder
             throw new Exception($"{docFxPath} is not a valid DocFx installation.");
         }
 
-        _docFxPath = docFxPath;
+        return docFxPath;
 
         static string? FindDocFxInPath()
         {
@@ -132,17 +132,19 @@ internal sealed partial class DocumentBuilder
         }
     }
 
-    private async Task LoadPackageInfo()
+    private async Task<PackageInfo> LoadPackageInfo()
     {
         string packageJsonPath = Path.Combine(_packagePath, "package.json");
         try
         {
             string packageJsonText = await Files.ReadText(packageJsonPath);
-            _packageInfo = JsonSerializer.Deserialize(packageJsonText, SerializerContext.Default.PackageInfo);
-            if (_packageInfo?.IsValid != true)
+            PackageInfo? packageInfo = JsonSerializer.Deserialize(packageJsonText, SerializerContext.Default.PackageInfo);
+            if (packageInfo?.IsValid != true)
             {
                 throw new Exception("Invalid package.json.");
             }
+
+            return packageInfo;
         }
         catch (FileNotFoundException)
         {
@@ -156,7 +158,7 @@ internal sealed partial class DocumentBuilder
         return await Files.TryCopyFile(stylesheetPath, dst, _logger);
     }
 
-    private async Task LoadConfiguration()
+    private async Task<ProjectConfig> LoadConfiguration()
     {
         string path = Path.Combine(_packageDocumentationPath, "config.json");
         ProjectConfig? projectConfig = null;
@@ -166,6 +168,6 @@ internal sealed partial class DocumentBuilder
             projectConfig = JsonSerializer.Deserialize(json, SerializerContext.Default.ProjectConfig);
         }
 
-        _projectConfig = projectConfig ?? _projectConfig;
+        return projectConfig ?? new ProjectConfig();
     }
 }
