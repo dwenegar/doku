@@ -16,7 +16,9 @@ namespace Doku;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 internal sealed class Program
 {
-    private string Version => AssemblyHelpers.GetInformationalVersion();
+    public static string Name => AssemblyHelpers.GetAssemblyName();
+    public static string Version => AssemblyHelpers.GetInformationalVersion();
+    public static string NameAndVersion => $"{Name} {Version}";
 
     private static async Task<int> Main(string[] args) => await CommandLineApplication.ExecuteAsync<Program>(args);
 

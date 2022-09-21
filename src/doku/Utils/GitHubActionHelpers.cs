@@ -10,7 +10,7 @@ public static class GitHubActionHelpers
 {
     public static bool IsRunningOnGitHubAction { get; } = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
 
-    public static GitHubActionInfo? GetInfo()
+    public static GitHubActionInfo? GetGitHubInfo()
     {
         // https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
         if (!IsRunningOnGitHubAction)

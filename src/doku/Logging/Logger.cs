@@ -3,6 +3,7 @@
 // For terms of use, see LICENSE.txt
 
 using System;
+using Lunet.Extensions.Logging.SpectreConsole;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using static Doku.Utils.GitHubActionHelpers;
@@ -33,6 +34,16 @@ internal sealed class Logger
         }
 
         _logger.Log(level, exception, message, args);
+    }
+
+    public void LogMarkup(LogLevel level, Exception? exception, string? message, params object?[] args)
+    {
+        if (level == LogLevel.Error)
+        {
+            HasErrors = true;
+        }
+
+        _logger.LogMarkup(level, exception, message, args);
     }
 
     private sealed class Group : IDisposable

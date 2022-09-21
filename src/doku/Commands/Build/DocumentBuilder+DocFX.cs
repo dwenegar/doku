@@ -25,9 +25,9 @@ internal sealed partial class DocumentBuilder
         await docFx.Run(docFxJsonFile);
     }
 
-    private async Task<Version> GetDocFxVersion()
+    private async Task<Version> GetDocFxVersion(string docfxPath)
     {
-        var docFx = new DocFx(_docFxPath!, _logger);
+        var docFx = new DocFx(docfxPath, _logger);
         string docFxOutput = await docFx.Run("--version");
         var regex = new Regex(@"docfx (\d+\.\d+\.\d+)", RegexOptions.Multiline);
         Match match = regex.Match(docFxOutput);

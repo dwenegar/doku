@@ -17,42 +17,44 @@ internal sealed partial class DocumentBuilder
     {
         using IDisposable _ = BeginGroup("Configuring");
 
-        GitHubActionInfo? gitHubInfo = GitHubActionHelpers.GetInfo();
-        if (gitHubInfo is not null)
-        {
-            Info($"Running from GitHub: {gitHubInfo}");
-        }
-
-        _packageInfo = await LoadPackageInfo();
-        Info($"Building documentation for package {_packageInfo.DisplayName} {_packageInfo.Version} targeting {_packageInfo.Unity}");
-
-        _docFxPath = FindDocFx();
-        Info($"Using DocFx at {_docFxPath}, version {await GetDocFxVersion()}");
-        Info($"Writing files to {_outputPath}");
-        Info($"The build directory is {_buildPath}");
+        (_docFxPath, Version docFxVersion) = await FindDocFx();
+        Info($"Using DocFx {docFxVersion} at {_docFxPath}");
 
         (_templateInfo, _templatePath) = await ConfigureTemplate();
+        if (_templateInfo is not null && _templatePath is not null)
+        {
+            Info($"Using {(_templateInfo.Type == TemplateType.Full ? string.Empty : "partial ")} template at {_templatePath}");
+        }
+        else if (_templateInfo is not null)
+        {
+            Info($"Using {(_templateInfo.Type == TemplateType.Full ? string.Empty : "partial ")} template");
+        }
 
         _projectConfig = await LoadConfiguration();
-        Info("Configuration");
-        Info($"  Disable default filter: {(_projectConfig.DisableDefaultFilter ? "YES" : "NO")}");
-        Info($"  Enable search: {(_projectConfig.EnableSearch ? "YES" : "NO")}");
-        Info("  Define constants:");
-        foreach (string defineConstant in _projectConfig.DefineConstants)
+        Info($"Disable default filter: {(_projectConfig.DisableDefaultFilter ? "YES" : "NO")}");
+        Info($"Enable search: {(_projectConfig.EnableSearch ? "YES" : "NO")}");
+        Info($"Define constants: {string.Join(',', _projectConfig.DefineConstants)}");
+
+        string[] sources = _projectConfig.Sources.Select(x => x.NormalizeSeparators()).ToArray();
+        if (sources.Length < 3)
         {
-            Info($"  - {defineConstant}");
+            Info($"Sources: {string.Join(',', sources)}");
+        }
+        else
+        {
+            Info("Sources:");
+            foreach (string source in sources)
+            {
+                Info($"- {source}");
+            }
         }
 
-        Info("  Sources:");
-        foreach (string configSource in _projectConfig.Sources)
-        {
-            Info($"  - {configSource.NormalizeSeparators()}");
-        }
-
-        Info($"  Exclude manual: {(_projectConfig.Excludes.Manual ? "YES" : "NO")}");
-        Info($"  Exclude API docs: {(_projectConfig.Excludes.ApiDocs ? "YES" : "NO")}");
-        Info($"  Exclude changelog: {(_projectConfig.Excludes.Changelog ? "YES" : "NO")}");
-        Info($"  Exclude license: {(_projectConfig.Excludes.License ? "YES" : "NO")}");
+        Info($"Exclude manual: {(_projectConfig.Excludes.Manual ? "YES" : "NO")}");
+        Info($"Exclude API docs: {(_projectConfig.Excludes.ApiDocs ? "YES" : "NO")}");
+        Info($"Exclude changelog: {(_projectConfig.Excludes.Changelog ? "YES" : "NO")}");
+        Info($"Exclude license: {(_projectConfig.Excludes.License ? "YES" : "NO")}");
+        Info($"Build directory: {_buildPath}");
+        Info($"Output directory: {_outputPath}");
     }
 
     private async Task<(TemplateInfo?, string?)> ConfigureTemplate()
@@ -61,7 +63,6 @@ internal sealed partial class DocumentBuilder
         {
             string templatePath = Path.GetFullPath(TemplatePath);
             TemplateInfo templateInfo = await LoadTemplateInfo(templatePath);
-            Info($"Using {(templateInfo.Type == TemplateType.Full ? string.Empty : "partial ")} template at {templatePath}");
             return (templateInfo, templatePath);
         }
 
@@ -100,7 +101,7 @@ internal sealed partial class DocumentBuilder
         return (null, null);
     }
 
-    private string FindDocFx()
+    private async Task<(string, Version)> FindDocFx()
     {
         string? docFxPath = DocFxPath ?? FindDocFxInPath();
         if (docFxPath == null)
@@ -118,7 +119,14 @@ internal sealed partial class DocumentBuilder
             throw new Exception($"{docFxPath} is not a valid DocFx installation.");
         }
 
-        return docFxPath;
+        Version version = await GetDocFxVersion(docFxPath);
+        var minimumVersion = new Version(2, 5, 0);
+        if (version < minimumVersion)
+        {
+            throw new Exception($"{Program.Name} required DocFx version {minimumVersion} or greater, got {version}");
+        }
+
+        return (docFxPath, version);
 
         static string? FindDocFxInPath()
         {

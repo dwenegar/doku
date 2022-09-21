@@ -62,6 +62,9 @@ internal sealed partial class DocumentBuilder
             Files.DeleteDirectory(_outputPath, _logger);
             Files.DeleteDirectory(_buildPath, _logger);
 
+            _packageInfo = await LoadPackageInfo();
+            Info($"Building documentation for package {_packageInfo.DisplayName} {_packageInfo.Version} targeting {_packageInfo.Unity}");
+
             await Configure();
             await CreateProject();
             await RunDocFx();

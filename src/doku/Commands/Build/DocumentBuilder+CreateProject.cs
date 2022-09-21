@@ -70,10 +70,10 @@ internal sealed partial class DocumentBuilder
 
     private async Task CreateCSharpProject()
     {
-        Info("Creating the C# project.");
+        Info("Creating the C# project");
 
         const string projectTemplate =
-            "<Project ToolsVersion=\"4.0\" DefaultTargets=\"FullPublish\" xmlns=\"https://schemas.microsoft.com/developer/msbuild/2003\">\n"
+            "<Project ToolsVersion=\"4.0\" DefaultTargets=\"FullPublish\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n"
             + "  <PropertyGroup>\n"
             + "    <DefineConstants>{0}</DefineConstants>\n"
             + "    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>"

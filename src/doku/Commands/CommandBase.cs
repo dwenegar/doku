@@ -40,6 +40,14 @@ internal abstract class CommandBase
     protected async Task<int> OnExecuteAsync(CommandLineApplication app)
     {
         Logger = InitializeLogging();
+
+        Info(Program.NameAndVersion);
+        GitHubActionInfo? gitHubInfo = GetGitHubInfo();
+        if (gitHubInfo is not null)
+        {
+            Info($"Running from GitHub: {gitHubInfo}");
+        }
+
         await ExecuteAsync(app);
         return Logger.HasErrors ? 1 : 0;
     }
