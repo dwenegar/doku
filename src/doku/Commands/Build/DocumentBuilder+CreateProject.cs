@@ -248,15 +248,19 @@ internal sealed partial class DocumentBuilder
     {
         Info("Copying the source code");
 
-        var count = 0;
+        var totalFileCount = 0;
         foreach (string source in _projectConfig!.Sources)
         {
             string src = Path.Combine(_packagePath, source);
             string dst = Path.Combine(_buildSourcesPath, source);
-            count += await Files.CopyDirectory(src, dst, "*.cs", _logger);
+            int fileCount = await Files.CopyDirectory(src, dst, "*.cs", _logger);
+            Info($"- {source} / {fileCount} files");
+
+            totalFileCount += fileCount;
         }
 
-        _hasApiDocs = count > 0;
+
+        _hasApiDocs = totalFileCount > 0;
     }
 
     private async Task CopyManualFiles()

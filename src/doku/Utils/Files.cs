@@ -1,5 +1,6 @@
 // Copyright (c) Simone Livieri. For terms of use, see LICENSE.txt
 
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,14 +39,14 @@ internal static class Files
             File.Move(src, dst);
             logger.LogDebug($"Moved {src} to {dst}");
         }
-    }
 
-    private static void DeleteFile(string path, Logger logger)
-    {
-        if (File.Exists(path))
+        static void DeleteFile(string path, Logger logger)
         {
-            File.Delete(path);
-            logger.LogDebug($"Deleted file {path}");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+                logger.LogDebug($"Deleted file {path}");
+            }
         }
     }
 
@@ -69,6 +70,9 @@ internal static class Files
 
     public static async Task<int> CopyDirectory(string src, string dst, string filter, Logger logger)
     {
+        Debug.Assert(Path.IsPathRooted(src));
+        Debug.Assert(Path.IsPathRooted(dst));
+
         var count = 0;
         if (Directory.Exists(src))
         {

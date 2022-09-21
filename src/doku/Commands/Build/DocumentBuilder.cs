@@ -88,7 +88,8 @@ internal sealed partial class DocumentBuilder
         using IDisposable _ = _logger.BeginGroup("Copying files to output folder");
 
         string sourcePath = Path.Combine(_buildPath, "_site");
-        await Files.CopyDirectory(sourcePath, _outputPath, "*.*", _logger);
+        int fileCount = await Files.CopyDirectory(sourcePath, _outputPath, "*.*", _logger);
+        Info($"Copied {fileCount} files");
     }
 
     private async Task<bool> TryCopyPackageFileToBuildFolder(string fileName, string? destinationFileName = null)
