@@ -316,7 +316,6 @@ internal sealed partial class DocumentBuilder
                 toc.AppendLine("- name: License") //
                    .AppendLine("  href: LICENSE.md");
             }
-
         }
 
         string[] thirdPartyLicenseFiles =

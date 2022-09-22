@@ -10,6 +10,7 @@ internal static class LoggerExtensions
 {
     public static void LogInfo(this Logger logger, string message) =>
         logger.Log(LogLevel.Information, null, message);
+
     public static void LogInfoMarkup(this Logger logger, string message, params object?[] args) =>
         logger.LogMarkup(LogLevel.Information, null, message, args);
 

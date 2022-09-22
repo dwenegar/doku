@@ -76,7 +76,7 @@ internal abstract class CommandBase
                        },
                        IndentAfterNewLine = false,
                        IncludeTimestamp = true,
-                       IncludeNewLineBeforeMessage = false,
+                       IncludeNewLineBeforeMessage = false
                    });
         });
 
