@@ -19,6 +19,10 @@ internal sealed partial class BuildCommand
     private string? TemplatePath { get; } = default;
 
     [FileExists]
+    [Option("--config", Description = "The path of the config file.")]
+    private string? ConfigPath { get; } = default;
+
+    [FileExists]
     [Option("--style", Description = "The path of the custom stylesheet.")]
     private string? StyleSheetPath { get; } = default;
 

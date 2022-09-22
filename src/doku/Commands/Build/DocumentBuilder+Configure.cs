@@ -166,7 +166,11 @@ internal sealed partial class DocumentBuilder
 
     private async Task<ProjectConfig> LoadConfiguration()
     {
-        string path = Path.Combine(_packageDocumentationPath, "config.json");
+        string path = ConfigPath is null
+            ? Path.Combine(_packageDocumentationPath, "config.json")
+            : Path.GetFullPath(ConfigPath);
+
+        Info($"Loading {path}");
         ProjectConfig? projectConfig = null;
         if (File.Exists(path))
         {

@@ -54,6 +54,7 @@ internal sealed partial class DocumentBuilder
     public bool KeepBuildFolder { get; init; }
     public string? TemplatePath { get; init; }
     public string? StyleSheetPath { get; init; }
+    public string? ConfigPath { get; init; }
 
     public async Task Build()
     {

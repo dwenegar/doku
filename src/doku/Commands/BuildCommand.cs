@@ -22,6 +22,7 @@ internal sealed partial class BuildCommand : CommandBase
             DocFxPath = DocFxPath,
             TemplatePath = TemplatePath,
             StyleSheetPath = StyleSheetPath,
+            ConfigPath = ConfigPath,
             KeepBuildFolder = KeepBuildFolder
         };
         await builder.Build();
