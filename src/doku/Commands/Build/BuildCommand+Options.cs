@@ -7,7 +7,7 @@ using McMaster.Extensions.CommandLineUtils;
 
 // ReSharper disable ReplaceAutoPropertyWithComputedProperty
 
-namespace Doku.Commands;
+namespace Doku.Commands.Build;
 
 internal sealed partial class BuildCommand
 {

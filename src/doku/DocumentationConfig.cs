@@ -3,18 +3,15 @@
 // For terms of use, see LICENSE.txt
 
 using System;
-using System.Text.Json;
 
-namespace Doku.Commands.Build;
+namespace Doku.Commands;
 
 [Serializable]
-internal sealed class ProjectConfig
+internal sealed class DocumentationConfig
 {
     public ProjectConfigExcludes Excludes { get; set; } = new();
     public string[] DefineConstants { get; set; } = Array.Empty<string>();
     public string[] Sources { get; set; } = { "Editor", "Runtime" };
-
-    public override string ToString() => JsonSerializer.Serialize(this, SerializerContext.Default.ProjectConfig);
 }
 
 [Serializable]

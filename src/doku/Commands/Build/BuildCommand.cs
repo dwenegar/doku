@@ -3,21 +3,21 @@
 // For terms of use, see LICENSE.txt
 
 using System.Threading.Tasks;
-using Doku.Commands.Build;
+using Doku.Logging;
 using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
 
 // ReSharper disable ReplaceAutoPropertyWithComputedProperty
 
-namespace Doku.Commands;
+namespace Doku.Commands.Build;
 
 [Command("build", Description = "Build the documentation.")]
 internal sealed partial class BuildCommand : CommandBase
 {
     [UsedImplicitly]
-    protected override async Task ExecuteAsync(CommandLineApplication app)
+    protected override async Task ExecuteAsync(CommandLineApplication app, Logger logger)
     {
-        DocumentBuilder builder = new(PackagePath, OutputPath, BuildPath, Logger!)
+        DocumentBuilder builder = new(PackagePath, OutputPath, BuildPath, logger)
         {
             DocFxPath = DocFxPath,
             TemplatePath = TemplatePath,

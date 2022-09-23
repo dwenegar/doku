@@ -4,10 +4,10 @@
 
 using System.Text.Json.Serialization;
 
-namespace Doku.Commands.Build;
+namespace Doku.Commands;
 
 [JsonSerializable(typeof(TemplateInfo))]
-[JsonSerializable(typeof(ProjectConfig))]
+[JsonSerializable(typeof(DocumentationConfig))]
 [JsonSerializable(typeof(PackageInfo))]
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 // ReSharper disable once PartialTypeWithSinglePart

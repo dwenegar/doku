@@ -164,20 +164,20 @@ internal sealed partial class DocumentBuilder
         return await Files.TryCopyFile(stylesheetPath, dst, _logger);
     }
 
-    private async Task<ProjectConfig> LoadConfiguration()
+    private async Task<DocumentationConfig> LoadConfiguration()
     {
         string path = ConfigPath is null
             ? Path.Combine(_packageDocumentationPath, "config.json")
             : Path.GetFullPath(ConfigPath);
 
         Info($"Loading {path}");
-        ProjectConfig? projectConfig = null;
+        DocumentationConfig? projectConfig = null;
         if (File.Exists(path))
         {
             string json = await Files.ReadText(path);
-            projectConfig = JsonSerializer.Deserialize(json, SerializerContext.Default.ProjectConfig);
+            projectConfig = JsonSerializer.Deserialize(json, SerializerContext.Default.DocumentationConfig);
         }
 
-        return projectConfig ?? new ProjectConfig();
+        return projectConfig ?? new DocumentationConfig();
     }
 }

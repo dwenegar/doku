@@ -19,37 +19,26 @@ namespace Doku.Commands;
 
 internal abstract class CommandBase
 {
-    protected Logger? Logger { get; private set; }
-
     [Option("--log-level", Description = "The level at which to log the tool operations.")]
     private LogLevel LogLevel { get; } = LogLevel.Information;
 
-    protected abstract Task ExecuteAsync(CommandLineApplication app);
-
-    protected void Debug(string message) => Logger?.LogDebug(message);
-
-    protected void Trace(string message) => Logger?.LogTrace(message);
-
-    protected void Info(string message) => Logger?.LogInfo(message);
-
-    protected void Warning(string message) => Logger?.LogWarning(message);
-
-    protected void Error(string message) => Logger?.LogError(message);
+    protected abstract Task ExecuteAsync(CommandLineApplication app, Logger logger);
 
     [UsedImplicitly]
     protected async Task<int> OnExecuteAsync(CommandLineApplication app)
     {
-        Logger = InitializeLogging();
+        Logger logger = InitializeLogging();
 
-        Info(Program.NameAndVersion);
+        logger.LogInfo(Program.NameAndVersion);
+
         GitHubActionInfo? gitHubInfo = GetGitHubInfo();
         if (gitHubInfo is not null)
         {
-            Info($"Running from GitHub: {gitHubInfo}");
+            logger.LogInfo($"Running from GitHub: {gitHubInfo}");
         }
 
-        await ExecuteAsync(app);
-        return Logger.HasErrors ? 1 : 0;
+        await ExecuteAsync(app, logger);
+        return logger.HasErrors ? 1 : 0;
     }
 
     private Logger InitializeLogging()

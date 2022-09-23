@@ -2,7 +2,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Doku.Commands;
+using Doku.Commands.Build;
+using Doku.Commands.Init;
 using Doku.Utils;
 using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
@@ -11,7 +12,7 @@ namespace Doku;
 
 #pragma warning disable CA1822
 
-[Subcommand(typeof(BuildCommand))]
+[Subcommand(typeof(BuildCommand), typeof(InitCommand))]
 [VersionOptionFromMember("-V|--version", MemberName = nameof(Version))]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 internal sealed class Program

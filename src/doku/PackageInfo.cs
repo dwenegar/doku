@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Doku.Commands.Build;
+namespace Doku.Commands;
 
 [Serializable]
 internal sealed class PackageInfo
