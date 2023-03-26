@@ -56,7 +56,7 @@ internal sealed class Logger
                 AnsiConsole.WriteLine($"::group::{title}");
             }
 
-            AnsiConsole.Write(new Rule(title) { Alignment = Justify.Left });
+            AnsiConsole.Write(new Rule(title) { Justification = Justify.Left });
             Console.Out.Flush();
         }
 
