@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Doku.Logging;
 using Doku.Runners;
 
 namespace Doku.Commands.Build;
@@ -29,7 +30,7 @@ internal sealed partial class DocumentBuilder
     {
         var docFx = new DocFx(docfxPath, _logger);
         string docFxOutput = await docFx.Run("--version");
-        var regex = new Regex(@"docfx (\d+\.\d+\.\d+)", RegexOptions.Multiline);
+        var regex = new Regex(@"(\d+\.\d+\.\d+)", RegexOptions.Multiline);
         Match match = regex.Match(docFxOutput);
         return Version.Parse(match.Groups[1].Value);
     }
