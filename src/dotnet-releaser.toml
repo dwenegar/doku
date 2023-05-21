@@ -8,6 +8,12 @@ project = "doku.sln"
 user = "dwenegar"
 repo = "doku"
 
+[brew]
+publish = false
+
+[scoop]
+publish = false
+
 [nuget]
 publish = false
 
