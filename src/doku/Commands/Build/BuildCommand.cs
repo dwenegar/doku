@@ -20,6 +20,7 @@ internal sealed partial class BuildCommand : CommandBase
         DocumentBuilder builder = new(PackagePath, OutputPath, BuildPath, logger)
         {
             DocFxPath = DocFxPath,
+            UseModernTemplate = UseModernTemplate,
             TemplatePath = TemplatePath,
             StyleSheetPath = StyleSheetPath,
             ConfigPath = ConfigPath,

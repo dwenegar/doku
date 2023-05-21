@@ -55,6 +55,7 @@ internal sealed partial class DocumentBuilder
     public string? TemplatePath { get; init; }
     public string? StyleSheetPath { get; init; }
     public string? ConfigPath { get; init; }
+    public bool UseModernTemplate { get; init; }
 
     public async Task Build()
     {

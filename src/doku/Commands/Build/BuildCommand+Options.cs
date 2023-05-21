@@ -36,6 +36,9 @@ internal sealed partial class BuildCommand
     [Option("--build", Description = "The folder used for building the documentation.")]
     private string? BuildPath { get; } = default;
 
+    [Option("--modern", Description = "Use the modern DocFx template")]
+    private bool UseModernTemplate { get; } = default;
+
     [DirectoryExists]
     [Argument(0, "package-path", Description = "Path to the folder containing the package.json file.")]
     private string PackagePath { get; } = Environment.CurrentDirectory;

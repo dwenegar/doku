@@ -135,6 +135,10 @@ internal sealed partial class DocumentBuilder
         if (_templateInfo is not { Type: TemplateType.Full })
         {
             template.Append(@"""default""");
+            if (UseModernTemplate)
+            {
+                template.Append(@",""modern""");
+            }
         }
 
         if (_templateInfo != null)
