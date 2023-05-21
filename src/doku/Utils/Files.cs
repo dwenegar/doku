@@ -33,9 +33,9 @@ internal static class Files
 
     public static void MoveFile(string src, string dst, Logger logger)
     {
-        DeleteFile(dst, logger);
         if (File.Exists(src))
         {
+            DeleteFile(dst, logger);
             File.Move(src, dst);
             logger.LogDebug($"Moved {src} to {dst}");
         }
