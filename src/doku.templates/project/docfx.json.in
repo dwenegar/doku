@@ -16,6 +16,7 @@
       "dest": "api",
       "disableGitFeatures": false,
       "disableDefaultFilter": false,
+      "allowCompilationErrors": true,
       "filter": "filter.yml"
     }
   ],
