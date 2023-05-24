@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Doku.Resources;
 using Doku.Utils;
@@ -23,7 +24,7 @@ internal sealed partial class DocumentBuilder
 
         await ExtractDocFxProject();
         await CopyResources();
-        await CreateCSharpProject();
+        await CreateCSharpProjects();
         await CreateGlobalMetadataJson();
         await CreateDocFxJson();
         await CreateTableOfContents();
@@ -69,9 +70,61 @@ internal sealed partial class DocumentBuilder
         }
     }
 
-    private async Task CreateCSharpProject()
+    private async Task CreateCSharpProjects()
     {
-        Info("Creating the C# project");
+        ProjectInfo[] projectInfos = await GetProjectInfos();
+
+        string defineConstants = GetDefineConstants();
+        foreach (ProjectInfo projectInfo in projectInfos)
+        {
+            await CreateCSharpProject(projectInfo.Name, projectInfo.Files, defineConstants);
+        }
+
+        string GetDefineConstants()
+        {
+            var sb = new StringBuilder();
+            sb.Append((string?)PackageDocsGenerationDefine);
+            foreach (string defineConstant in _projectConfig!.DefineConstants)
+            {
+                sb.Append(';').Append(defineConstant);
+            }
+
+            return sb.ToString();
+        }
+    }
+
+    private async Task<ProjectInfo[]> GetProjectInfos()
+    {
+        string[] asmdefFiles = Directory.GetFiles(_buildSourcesPath, "*.asmdef", SearchOption.AllDirectories);
+        Array.Sort(asmdefFiles);
+        Array.Reverse(asmdefFiles);
+
+        var allCompilableFiles = new HashSet<string>(StringComparer.Ordinal);
+        var compilableFiles = new List<string>();
+
+        var projectInfos = new List<ProjectInfo>();
+        foreach (string asmdefFile in asmdefFiles)
+        {
+            string json = await Files.ReadText(asmdefFile);
+            AsmDefInfo asmdef = JsonSerializer.Deserialize(json, SerializerContext.Default.AsmDefInfo) ?? throw new Exception($"Failed to load {asmdefFile}.");
+
+            string asmdefFolder = Path.GetDirectoryName(asmdefFile) ?? throw new Exception($"Invalid path {asmdefFile}");
+            compilableFiles.Clear();
+            compilableFiles.AddRange(Directory.GetFiles(asmdefFolder, "*.cs", SearchOption.AllDirectories).Where(x => allCompilableFiles.Add(x)));
+
+            projectInfos.Add(new ProjectInfo
+            {
+                Name = asmdef.Name,
+                Files = compilableFiles.ToArray()
+            });
+        }
+
+        return projectInfos.ToArray();
+    }
+
+    private async Task CreateCSharpProject(string name, string[] files, string defineConstants)
+    {
+        Info($"Creating the C# project {name}");
 
         const string projectTemplate =
             "<Project ToolsVersion=\"4.0\" DefaultTargets=\"FullPublish\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n"
@@ -86,23 +139,15 @@ internal sealed partial class DocumentBuilder
             + "</Project>\n";
 
 
-            return sb.ToString();
-        }
-
-        string GetCompileItems()
+        var compileItems = new StringBuilder();
+        foreach (string cs in files)
         {
-            var sb = new StringBuilder();
-            foreach (string cs in Directory.GetFiles(_buildSourcesPath, "*.cs", SearchOption.AllDirectories))
-            {
-                sb.Append(@"    <Compile Include=""").Append(cs).AppendLine(@"""/>");
-            }
-
-            return sb.ToString();
+            compileItems.Append(@"    <Compile Include=""").Append(cs).AppendLine(@"""/>");
         }
 
         Directory.CreateDirectory(_buildSourcesPath);
-        var projectContent = string.Format(projectTemplate, GetDefineConstants(), GetCompileItems());
-        await Files.WriteText(Path.Combine(_buildSourcesPath, "doku.csproj"), projectContent, _logger);
+        var projectContent = string.Format(projectTemplate, defineConstants, compileItems);
+        await Files.WriteText(Path.Combine(_buildSourcesPath, $"{name}.csproj"), projectContent, _logger);
     }
 
     private async Task CreateGlobalMetadataJson()
@@ -251,7 +296,9 @@ internal sealed partial class DocumentBuilder
             string src = Path.Combine(_packagePath, source);
             string dst = Path.Combine(_buildSourcesPath, source);
             int fileCount = await Files.CopyDirectory(src, dst, "*.cs", _logger);
-            Info($"- {source} / {fileCount} files");
+            Info($"- {source} / {fileCount} C# files");
+            fileCount = await Files.CopyDirectory(src, dst, "*.asmdef", _logger);
+            Info($"- {source} / {fileCount} AsmDef files");
 
             totalFileCount += fileCount;
         }
@@ -376,6 +423,12 @@ internal sealed partial class DocumentBuilder
             string tocFile = Path.Combine(destinationFolder, "toc.yml");
             await Files.WriteText(tocFile, tocContent.ToString(), _logger);
         }
+    }
+
+    private struct ProjectInfo
+    {
+        public string Name;
+        public string[] Files;
     }
 
     private static class TocHelper

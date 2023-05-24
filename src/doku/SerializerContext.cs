@@ -9,6 +9,7 @@ namespace Doku.Commands;
 [JsonSerializable(typeof(TemplateInfo))]
 [JsonSerializable(typeof(DocumentationConfig))]
 [JsonSerializable(typeof(PackageInfo))]
+[JsonSerializable(typeof(AsmDefInfo))]
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 // ReSharper disable once PartialTypeWithSinglePart
 internal partial class SerializerContext : JsonSerializerContext { }
