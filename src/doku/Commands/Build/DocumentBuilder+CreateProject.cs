@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Doku.Resources;
 using Doku.Utils;
+using GlobExpressions;
 
 namespace Doku.Commands.Build;
 
@@ -84,14 +85,6 @@ internal sealed partial class DocumentBuilder
             + "  <Import Project=\"$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />\n"
             + "</Project>\n";
 
-        string GetDefineConstants()
-        {
-            var sb = new StringBuilder();
-            sb.Append((string?)PackageDocsGenerationDefine);
-            foreach (string defineConstant in _projectConfig!.DefineConstants)
-            {
-                sb.Append(';').Append(defineConstant);
-            }
 
             return sb.ToString();
         }
@@ -253,7 +246,7 @@ internal sealed partial class DocumentBuilder
         Info("Copying the source code");
 
         var totalFileCount = 0;
-        foreach (string source in _projectConfig!.Sources)
+        foreach (string source in ResolveSourceDirectories())
         {
             string src = Path.Combine(_packagePath, source);
             string dst = Path.Combine(_buildSourcesPath, source);
@@ -266,6 +259,15 @@ internal sealed partial class DocumentBuilder
 
         _hasApiDocs = totalFileCount > 0;
     }
+
+    private string[] ResolveSourceDirectories() => _projectConfig!.Sources
+                                                                  .Select(x => Glob.Directories(_packagePath, x))
+                                                                  .Where(x => x != null)
+                                                                  .SelectMany(x => x)
+                                                                  .Where(x => Directory.Exists(x))
+                                                                  .Distinct()
+                                                                  .OrderBy(x => x)
+                                                                  .ToArray();
 
     private async Task CopyManualFiles()
     {

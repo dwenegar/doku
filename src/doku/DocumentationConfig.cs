@@ -11,7 +11,7 @@ internal sealed class DocumentationConfig
 {
     public ProjectConfigExcludes Excludes { get; set; } = new();
     public string[] DefineConstants { get; set; } = Array.Empty<string>();
-    public string[] Sources { get; set; } = { "Editor", "Runtime" };
+    public string[] Sources { get; set; } = { "**/Editor", "**/Runtime" };
 }
 
 [Serializable]
