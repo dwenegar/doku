@@ -72,10 +72,9 @@ internal sealed partial class DocumentBuilder
 
     private async Task CreateCSharpProjects()
     {
-        ProjectInfo[] projectInfos = await GetProjectInfos();
-
         string defineConstants = GetDefineConstants();
-        foreach (ProjectInfo projectInfo in projectInfos)
+        ProjectInfo[] projectInfos = await GetProjectInfos();
+        foreach (ProjectInfo projectInfo in projectInfos.Where(x => x.Files.Length > 0))
         {
             await CreateCSharpProject(projectInfo.Name, projectInfo.Files, defineConstants);
         }
