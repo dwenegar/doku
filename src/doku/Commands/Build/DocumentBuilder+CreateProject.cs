@@ -290,21 +290,20 @@ internal sealed partial class DocumentBuilder
     {
         Info("Copying the source code");
 
-        var totalFileCount = 0;
+        var totalSourceFileCount = 0;
         foreach (string source in ResolveSourceDirectories())
         {
             string src = Path.Combine(_packagePath, source);
             string dst = Path.Combine(_buildSourcesPath, source);
-            int fileCount = await Files.CopyDirectory(src, dst, "*.cs", _logger);
-            Info($"- {source} / {fileCount} C# files");
-            fileCount = await Files.CopyDirectory(src, dst, "*.asmdef", _logger);
-            Info($"- {source} / {fileCount} AsmDef files");
+            int sourceFileCount = await Files.CopyDirectory(src, dst, "*.cs", _logger);
+            Info($"- {source} / {sourceFileCount} C# files");
+            totalSourceFileCount += sourceFileCount;
 
-            totalFileCount += fileCount;
+            int asmdefFileCount = await Files.CopyDirectory(src, dst, "*.asmdef", _logger);
+            Info($"- {source} / {asmdefFileCount} AsmDef files");
         }
 
-
-        _hasApiDocs = totalFileCount > 0;
+        _hasApiDocs = totalSourceFileCount > 0;
     }
 
     private string[] ResolveSourceDirectories() => _projectConfig!.Sources
