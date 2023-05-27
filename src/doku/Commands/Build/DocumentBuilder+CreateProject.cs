@@ -73,16 +73,44 @@ internal sealed partial class DocumentBuilder
     private async Task CreateCSharpProjects()
     {
         string defineConstants = GetDefineConstants();
+        string targetFrameWork = GetTargetFramework();
         ProjectInfo[] projectInfos = await GetProjectInfos();
         foreach (ProjectInfo projectInfo in projectInfos.Where(x => x.Files.Length > 0))
         {
-            await CreateCSharpProject(projectInfo.Name, projectInfo.Files, defineConstants);
+            await CreateCSharpProject(projectInfo.Name, projectInfo.Files);
+        }
+
+        async Task CreateCSharpProject(string name, string[] files)
+        {
+            Info($"Creating the C# project {name}");
+
+            const string projectTemplate =
+                "<Project Sdk=\"Microsoft.NET.Sdk\">\n"
+                + "  <PropertyGroup>\n"
+                + "    <DefineConstants>{0}</DefineConstants>\n"
+                + "    <TargetFramework>{1}</TargetFramework>\n"
+                + "    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>\n"
+                + "  </PropertyGroup>\n"
+                + "  <ItemGroup>\n"
+                + "    {2}"
+                + "  </ItemGroup>\n"
+                + "</Project>\n";
+
+            var compileItems = new StringBuilder();
+            foreach (string cs in files)
+            {
+                compileItems.Append(@"    <Compile Include=""").Append(cs).AppendLine(@"""/>");
+            }
+
+            Directory.CreateDirectory(_buildSourcesPath);
+            var projectContent = string.Format(projectTemplate, defineConstants, targetFrameWork, compileItems);
+            await Files.WriteText(Path.Combine(_buildSourcesPath, $"{name}.csproj"), projectContent, _logger);
         }
 
         string GetDefineConstants()
         {
             var sb = new StringBuilder();
-            sb.Append((string?)PackageDocsGenerationDefine);
+            sb.Append(PackageDocsGenerationDefine);
             foreach (string defineConstant in _projectConfig!.DefineConstants)
             {
                 sb.Append(';').Append(defineConstant);
@@ -90,6 +118,19 @@ internal sealed partial class DocumentBuilder
 
             return sb.ToString();
         }
+
+        string GetTargetFramework() => _packageInfo!.Unity switch
+        {
+            "2023.2" => "netstandard2.1",
+            "2023.1" => "netstandard2.1",
+            "2022.2" => "netstandard2.1",
+            "2022.1" => "netstandard2.1",
+            "2021.3" => "netstandard2.0",
+            "2021.2" => "netstandard2.0",
+            "2021.1" => "netstandard2.0",
+            "2020.3" => "netstandard2.0",
+            _ => "net48"
+        };
     }
 
     private async Task<ProjectInfo[]> GetProjectInfos()
@@ -119,34 +160,6 @@ internal sealed partial class DocumentBuilder
         }
 
         return projectInfos.ToArray();
-    }
-
-    private async Task CreateCSharpProject(string name, string[] files, string defineConstants)
-    {
-        Info($"Creating the C# project {name}");
-
-        const string projectTemplate =
-            "<Project ToolsVersion=\"4.0\" DefaultTargets=\"FullPublish\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n"
-            + "  <PropertyGroup>\n"
-            + "    <DefineConstants>{0}</DefineConstants>\n"
-            + "    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>"
-            + "  </PropertyGroup>\n"
-            + "  <ItemGroup>\n"
-            + "{1}"
-            + "  </ItemGroup>\n"
-            + "  <Import Project=\"$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />\n"
-            + "</Project>\n";
-
-
-        var compileItems = new StringBuilder();
-        foreach (string cs in files)
-        {
-            compileItems.Append(@"    <Compile Include=""").Append(cs).AppendLine(@"""/>");
-        }
-
-        Directory.CreateDirectory(_buildSourcesPath);
-        var projectContent = string.Format(projectTemplate, defineConstants, compileItems);
-        await Files.WriteText(Path.Combine(_buildSourcesPath, $"{name}.csproj"), projectContent, _logger);
     }
 
     private async Task CreateGlobalMetadataJson()
@@ -303,16 +316,19 @@ internal sealed partial class DocumentBuilder
         }
 
         _hasApiDocs = totalSourceFileCount > 0;
-    }
 
-    private string[] ResolveSourceDirectories() => _projectConfig!.Sources
-                                                                  .Select(x => Glob.Directories(_packagePath, x))
-                                                                  .Where(x => x != null)
-                                                                  .SelectMany(x => x)
-                                                                  .Where(x => Directory.Exists(x))
-                                                                  .Distinct()
-                                                                  .OrderBy(x => x)
-                                                                  .ToArray();
+        IEnumerable<string> ResolveSourceDirectories()
+        {
+            return _projectConfig!.Sources
+                                  .Select(x => Glob.Directories(_packagePath, x))
+                                  .Where(x => x != null)
+                                  .SelectMany(x => x)
+                                  .Where(x => Directory.Exists(x))
+                                  .Distinct()
+                                  .OrderBy(x => x)
+                                  .ToArray();
+        }
+    }
 
     private async Task CopyManualFiles()
     {
