@@ -17,7 +17,8 @@ internal sealed partial class DocumentBuilder
     {
         using IDisposable _ = BeginGroup("Configuring");
 
-        (_docFxPath, Version docFxVersion) = await FindDocFx();
+        Version docFxMinimumVersion = UseModernTemplate ? new Version(2, 63, 0) : new Version (2, 60, 0);
+        (_docFxPath, Version docFxVersion) = await FindDocFx(docFxMinimumVersion);
         Info($"Using DocFx {docFxVersion} at {_docFxPath}");
 
         (_templateInfo, _templatePath) = await ConfigureTemplate();
@@ -99,7 +100,7 @@ internal sealed partial class DocumentBuilder
         return (null, null);
     }
 
-    private async Task<(string, Version)> FindDocFx()
+    private async Task<(string, Version)> FindDocFx(Version minimumVersion)
     {
         string? docFxPath = DocFxPath ?? FindDocFxInPath();
         if (docFxPath == null)
@@ -118,7 +119,6 @@ internal sealed partial class DocumentBuilder
         }
 
         Version version = await GetDocFxVersion(docFxPath);
-        var minimumVersion = new Version(2, 5, 0);
         if (version < minimumVersion)
         {
             throw new Exception($"{Program.Name} required DocFx version {minimumVersion} or greater, got {version}");
