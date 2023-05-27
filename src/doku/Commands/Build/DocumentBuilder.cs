@@ -42,7 +42,7 @@ internal sealed partial class DocumentBuilder
         _packagePath = Path.GetFullPath(packagePath);
         _outputPath = Path.GetFullPath(outputPath);
         _buildPath = buildPath == null
-            ? Path.Combine(Path.GetTempPath(), $"{AssemblyHelpers.GetAssemblyName()}-{Path.GetRandomFileName()}")
+            ? Path.Combine(Path.GetTempPath(), $"{Program.Name}-{Path.GetRandomFileName()}")
             : Path.GetFullPath(buildPath);
 
         _packageDocumentationPath = Path.Combine(_packagePath, "Documentation~");

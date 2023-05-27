@@ -29,7 +29,7 @@ internal abstract class CommandBase
     {
         Logger logger = InitializeLogging();
 
-        logger.LogInfo(Program.NameAndVersion);
+        logger.LogInfo(Program.LongVersion);
 
         GitHubActionInfo? gitHubInfo = GetGitHubInfo();
         if (gitHubInfo is not null)
@@ -69,7 +69,7 @@ internal abstract class CommandBase
                    });
         });
 
-        ILogger logger = factory.CreateLogger(AssemblyHelpers.GetAssemblyName());
+        ILogger logger = factory.CreateLogger(Program.Name);
         return new Logger(logger, LogLevel);
     }
 }
