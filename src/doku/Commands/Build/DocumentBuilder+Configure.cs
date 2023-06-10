@@ -102,18 +102,38 @@ internal sealed partial class DocumentBuilder
 
     private async Task<(string, Version)> FindDocFx(Version minimumVersion)
     {
-        string? docFxPath = DocFxPath ?? FindDocFxInPath();
-        if (docFxPath == null)
+        if (DocFxPath != null)
         {
-            throw new Exception("Could not find docfx.exe in the system path.");
+            return await ContinueFindDocFx(minimumVersion, DocFxPath, true);
         }
 
-        if (!docFxPath.EndsWith("docfx.exe", StringComparison.OrdinalIgnoreCase))
+        string? docFxPath= FindDocFxInPath("docfx");
+        if (docFxPath != null)
         {
-            docFxPath = Path.Combine(docFxPath, "docfx.exe");
+            return await ContinueFindDocFx(minimumVersion, docFxPath, false);
         }
 
-        if (!File.Exists(docFxPath))
+        docFxPath = FindDocFxInPath("docfx.exe");
+        if (docFxPath != null)
+        {
+            return await ContinueFindDocFx(minimumVersion, docFxPath, false);
+        }
+
+        throw new Exception("Could not find docfx or docfx.exe in the system path.");
+
+        static string? FindDocFxInPath(string docFxFile)
+        {
+            string? envPath = Environment.GetEnvironmentVariable("PATH");
+            return envPath?.Split(Path.PathSeparator).FirstOrDefault(x => ContainsDocFxExe(x, docFxFile));
+        }
+
+        static bool ContainsDocFxExe(string? directory, string docFxFile)
+            => !string.IsNullOrEmpty(directory) && File.Exists(Path.Combine(directory, docFxFile));
+    }
+
+    private async Task<(string, Version)> ContinueFindDocFx(Version minimumVersion, string docFxPath, bool fromCommandLine)
+    {
+        if (fromCommandLine && !TryResolveDocFxPath(ref docFxPath))
         {
             throw new Exception($"{docFxPath} is not a valid DocFx installation.");
         }
@@ -125,17 +145,21 @@ internal sealed partial class DocumentBuilder
         }
 
         return (docFxPath, version);
+    }
 
-        static string? FindDocFxInPath()
+    private static bool TryResolveDocFxPath(ref string docFxPath)
+    {
+        string fileName = Path.GetFileNameWithoutExtension(docFxPath);
+        if (!fileName.Equals("docfx", StringComparison.OrdinalIgnoreCase))
         {
-            string? envPath = Environment.GetEnvironmentVariable("PATH");
-            return envPath?.Split(Path.PathSeparator).FirstOrDefault(ContainsDocFxExe);
+            docFxPath = Path.Combine(docFxPath, "docfx");
+            if (!File.Exists(docFxPath))
+            {
+                docFxPath = Path.Combine(docFxPath, "docfx");
+            }
         }
 
-        static bool ContainsDocFxExe(string? directory)
-        {
-            return !string.IsNullOrEmpty(directory) && File.Exists(Path.Combine(directory, "docfx.exe"));
-        }
+        return File.Exists(docFxPath);
     }
 
     private async Task<PackageInfo> LoadPackageInfo()

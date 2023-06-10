@@ -6,7 +6,6 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Doku.Commands.Build;
 using Doku.Logging;
 using Doku.Utils;
 using McMaster.Extensions.CommandLineUtils;

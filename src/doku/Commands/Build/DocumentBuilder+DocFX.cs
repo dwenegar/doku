@@ -6,7 +6,6 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Doku.Logging;
 using Doku.Runners;
 
 namespace Doku.Commands.Build;

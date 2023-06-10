@@ -43,7 +43,7 @@ internal abstract class CommandBase
 
     private Logger InitializeLogging()
     {
-        using ILoggerFactory? factory = LoggerFactory.Create(builder =>
+        using ILoggerFactory factory = LoggerFactory.Create(builder =>
         {
             IAnsiConsoleOutput consoleOutput = new AnsiConsoleOutput(Console.Out);
             if (IsRunningOnGitHubAction)
