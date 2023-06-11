@@ -102,40 +102,32 @@ internal sealed partial class DocumentBuilder
 
     private async Task<(string, Version)> FindDocFx(Version minimumVersion)
     {
-        if (DocFxPath != null)
+        string? docFoxInstallPath = DocFxPath ?? FindInPath("docfx.exe") ?? FindInPath("docfx");
+        if (docFoxInstallPath == null)
         {
-            return await ContinueFindDocFx(minimumVersion, DocFxPath, true);
+            throw new Exception("Could not find docfx or docfx.exe in the system path.");
         }
 
-        string? docFxPath= FindDocFxInPath("docfx");
-        if (docFxPath != null)
-        {
-            return await ContinueFindDocFx(minimumVersion, docFxPath, false);
-        }
+        return await ContinueFindDocFx(minimumVersion, docFoxInstallPath);
 
-        docFxPath = FindDocFxInPath("docfx.exe");
-        if (docFxPath != null)
-        {
-            return await ContinueFindDocFx(minimumVersion, docFxPath, false);
-        }
-
-        throw new Exception("Could not find docfx or docfx.exe in the system path.");
-
-        static string? FindDocFxInPath(string docFxFile)
+        static string? FindInPath(string fileName)
         {
             string? envPath = Environment.GetEnvironmentVariable("PATH");
-            return envPath?.Split(Path.PathSeparator).FirstOrDefault(x => ContainsDocFxExe(x, docFxFile));
+            return envPath?.Split(Path.PathSeparator).FirstOrDefault(x => ContainsDocFxExe(x, fileName));
         }
 
         static bool ContainsDocFxExe(string? directory, string docFxFile)
-            => !string.IsNullOrEmpty(directory) && File.Exists(Path.Combine(directory, docFxFile));
+        {
+            return !string.IsNullOrEmpty(directory) && File.Exists(Path.Combine(directory, docFxFile));
+        }
     }
 
-    private async Task<(string, Version)> ContinueFindDocFx(Version minimumVersion, string docFxPath, bool fromCommandLine)
+    private async Task<(string, Version)> ContinueFindDocFx(Version minimumVersion, string docFxInstallPath)
     {
-        if (fromCommandLine && !TryResolveDocFxPath(ref docFxPath))
+        string? docFxPath = ResolveDocFxPath(docFxInstallPath);
+        if (docFxPath == null)
         {
-            throw new Exception($"{docFxPath} is not a valid DocFx installation.");
+            throw new Exception($"{docFxInstallPath} is not a valid DocFx installation.");
         }
 
         Version version = await GetDocFxVersion(docFxPath);
@@ -145,21 +137,25 @@ internal sealed partial class DocumentBuilder
         }
 
         return (docFxPath, version);
-    }
 
-    private static bool TryResolveDocFxPath(ref string docFxPath)
-    {
-        string fileName = Path.GetFileNameWithoutExtension(docFxPath);
-        if (!fileName.Equals("docfx", StringComparison.OrdinalIgnoreCase))
+        static string? ResolveDocFxPath(string docFxInstallPath)
         {
-            docFxPath = Path.Combine(docFxPath, "docfx");
-            if (!File.Exists(docFxPath))
+            if (Directory.Exists(docFxInstallPath))
             {
-                docFxPath = Path.Combine(docFxPath, "docfx");
-            }
-        }
+                string path = Path.Combine(docFxInstallPath, "docfx.exe");
+                if (!File.Exists(path))
+                {
+                    path = Path.Combine(docFxInstallPath, "docfx");
+                }
 
-        return File.Exists(docFxPath);
+                if (File.Exists(path))
+                {
+                    return path;
+                }
+            }
+
+            return null;
+        }
     }
 
     private async Task<PackageInfo> LoadPackageInfo()
