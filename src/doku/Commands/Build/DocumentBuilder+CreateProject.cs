@@ -43,6 +43,7 @@ internal sealed partial class DocumentBuilder
     {
         await CopyTemplateFiles();
 
+        Files.CreateDirectory(_buildSourcesPath, _logger);
         if (!_projectConfig!.Excludes.ApiDocs)
         {
             await CopySourceFiles();
