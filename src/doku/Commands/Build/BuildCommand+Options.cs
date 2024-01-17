@@ -12,7 +12,7 @@ namespace Doku.Commands.Build;
 internal sealed partial class BuildCommand
 {
     [Option("-o|--output", Description = "The output folder.")]
-    private string OutputPath { get; } = "docs";
+    private string OutputPath { get; } = "docs~";
 
     [DirectoryExists]
     [Option("--template", Description = "The custom template folder.")]
