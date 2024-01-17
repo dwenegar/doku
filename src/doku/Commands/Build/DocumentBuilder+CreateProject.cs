@@ -376,7 +376,7 @@ internal sealed partial class DocumentBuilder
 
         var toc = new StringBuilder();
 
-        string[] licenseFiles = { "LICENSE.md", "LICENSE.text" };
+        string[] licenseFiles = { "LICENSE.md", "LICENSE.txt" };
         foreach (string licenseFile in licenseFiles)
         {
             if (await TryCopyPackageFileToBuildFolder(licenseFile, "license/LICENSE.md"))
