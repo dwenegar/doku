@@ -21,24 +21,13 @@
     }
   ],
   "build": {
-    "xref": [
-      "https://dwenegar.github.io/UnityXRefMap/$UNITY_VERSION/xrefmap.yml"
-    ],
     "content": [
       {
         "files": [
-          "api/**.yml",
-          "api/index.md"
-        ]
-      },
-      {
-        "files": [
-          "manual/**.md",
-          "manual/**/toc.yml",
-          "changelog/**.md",
-          "changelog/**/toc.yml",
-          "license/**.md",
-          "license/**/toc.yml",
+          $API_DOCS
+          $MANUAL
+          $CHANGELOG
+          $LICENSE
           "toc.yml",
           "*.md"
         ],

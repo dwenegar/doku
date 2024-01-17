@@ -9,7 +9,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Doku.Logging;
 using Doku.Resources;
 using Doku.Utils;
 using GlobExpressions;
@@ -178,6 +180,9 @@ internal sealed partial class DocumentBuilder
         await Files.WriteText(destinationFile, source, _logger);
     }
 
+    [GeneratedRegex(@"""metadata"": \[(?>\[(?<c>)|[^\[\]]+|\](?<-c>))*(?(c)(?!))\],")]
+    private partial Regex GetMetadataRegex();
+
     private async Task CreateDocFxJson()
     {
         Info("Creating the docfx.json file");
@@ -205,8 +210,21 @@ internal sealed partial class DocumentBuilder
         string srcPath = Path.Combine(_buildPath, "docfx.json.in");
         string json = await Files.ReadText(srcPath);
 
+        DocumentationConfig config = _projectConfig!;
+
         json = json.Replace("$UNITY_VERSION", _packageInfo!.Unity)
-                   .Replace("$TEMPLATE", template.ToString());
+                   .Replace("$TEMPLATE", template.ToString())
+                   .Replace("$API_DOCS", !config.Excludes.ApiDocs ? @"""api/**.yml"", ""api/index.md""," : string.Empty)
+                   .Replace("$MANUAL", !config.Excludes.Manual ? @"""manual/**.md"", ""manual/**/toc.yml""," : string.Empty)
+                   .Replace("$LICENSE", !config.Excludes.License ? @"""license/**.md"", ""license/**/toc.yml""," : string.Empty)
+                   .Replace("$CHANGELOG", !config.Excludes.Changelog ? @"""changelog/**.md"", ""changelog/**/toc.yml""," : string.Empty);
+
+        if (config.Excludes.ApiDocs)
+        {
+            Match m = GetMetadataRegex().Match(json);
+            _logger.LogInfo($"{m.Index} {m.Length} {m.Value.Length}");
+            json = json.Remove(m.Index, m.Length);
+        }
 
         string dstPath = Path.Combine(_buildPath, "docfx.json");
         await Files.WriteText(dstPath, json, _logger);
