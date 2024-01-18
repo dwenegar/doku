@@ -394,6 +394,7 @@ internal sealed partial class DocumentBuilder
 
         var toc = new StringBuilder();
 
+        string? licenseIndexFileName = null;
         string[] licenseFiles = { "LICENSE.md", "LICENSE.txt" };
         foreach (string licenseFile in licenseFiles)
         {
@@ -401,6 +402,7 @@ internal sealed partial class DocumentBuilder
             {
                 toc.AppendLine("- name: License") //
                    .AppendLine("  href: LICENSE.md");
+                licenseIndexFileName = "LICENSE.html";
             }
         }
 
@@ -418,6 +420,7 @@ internal sealed partial class DocumentBuilder
             {
                 toc.AppendLine("- name: Third Party Notices") //
                    .AppendLine("  href: ThirdPartyNotices.md");
+                licenseIndexFileName ??= "ThirdPartyNotices.html";
             }
         }
 
@@ -429,7 +432,7 @@ internal sealed partial class DocumentBuilder
             Directory.CreateDirectory(destinationFolder);
 
             string indexFile = Path.Combine(destinationFolder, "index.md");
-            await Files.WriteText(indexFile, "<script>window.location.replace('LICENSE.html')</script>", _logger);
+            await Files.WriteText(indexFile, $"<script>window.location.replace('{licenseIndexFileName!}')</script>", _logger);
 
             string tocFile = Path.Combine(destinationFolder, "toc.yml");
             await Files.WriteText(tocFile, toc.ToString(), _logger);
