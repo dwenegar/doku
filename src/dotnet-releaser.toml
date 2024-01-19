@@ -4,6 +4,9 @@ profile = "custom"
 [msbuild]
 project = "doku.sln"
 
+[msbuild.properties]
+PublishTrimmed = false
+
 [github]
 user = "dwenegar"
 repo = "doku"
